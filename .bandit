@@ -1,0 +1,2 @@
+[bandit]
+skip: B701
