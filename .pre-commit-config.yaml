@@ -155,4 +155,5 @@ repos:
         additional_dependencies:
           - types-attrs
           - types-setuptools
+          - pydantic
   # <---- Code Analysis --------------------------------------------------------------------------
