@@ -23,6 +23,8 @@ class PluginsList:
     Plugins manager.
     """
 
+    _instance = None
+
     def __init__(self) -> None:
         self.collectors: Dict[str, types.ModuleType] = {}
         self.processors: Dict[str, types.ModuleType] = {}
@@ -37,6 +39,17 @@ class PluginsList:
             f"<{self.__class__.__name__} collectors={list(self.collectors)} "
             f"processors={list(self.processors)} forwarders={list(self.forwarders)}>"
         )
+
+    @staticmethod
+    def instance() -> "PluginsList":
+        """
+        Return the cached instance of the plugins listing.
+
+        If it doesn't exist yet, a new instance is created and cached.
+        """
+        if PluginsList._instance is None:
+            PluginsList._instance = PluginsList()
+        return PluginsList._instance
 
     def load_plugins(self) -> None:
         """
