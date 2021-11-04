@@ -29,7 +29,7 @@ if TYPE_CHECKING:
 log = logging.getLogger(__name__)
 
 
-__virtualname__ = "saf"
+__virtualname__ = "analytics"
 
 
 def __virtual__() -> Union[str, Tuple[bool, str]]:
