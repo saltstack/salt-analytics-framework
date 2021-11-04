@@ -150,8 +150,21 @@ repos:
     rev: v0.910-1
     hooks:
       - id: mypy
-        files: ^(src/|tests/).*\.py$
+        name: Run mypy against source
+        files: ^src/.*\.py$
         args: [--strict]
+        additional_dependencies:
+          - types-attrs
+          - types-setuptools
+          - pydantic
+
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v0.910-1
+    hooks:
+      - id: mypy
+        name: Run mypy against tests
+        files: ^tests/.*\.py$
+        args: []
         additional_dependencies:
           - types-attrs
           - types-setuptools
