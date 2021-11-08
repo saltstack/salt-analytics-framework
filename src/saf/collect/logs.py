@@ -4,14 +4,16 @@
 A log collector plugin.
 """
 import asyncio
-import pathlib
-import os
 import logging
-from typing import AsyncIterator, Optional
+import os
+import pathlib
+from typing import AsyncIterator
+from typing import Optional
 from typing import Type
-from salt.utils.files import fopen
+
 from drain3 import TemplateMiner
 from drain3.template_miner_config import TemplateMinerConfig
+from salt.utils.files import fopen
 
 from saf.models import CollectConfigBase
 from saf.models import CollectedEvent
@@ -24,6 +26,7 @@ class LogCollectConfig(CollectConfigBase):
     """
     Configuration schema for the log collect plugin.
     """
+
     path: pathlib.Path
     parse_config: Optional[pathlib.Path] = None
     backfill: bool = True
@@ -70,6 +73,4 @@ async def collect(*, config: LogCollectConfig) -> AsyncIterator[CollectedEvent]:
                     yield event
 
     except FileNotFoundError as exc:
-        log.debug("File {} not found".format(exc.filename))
-
-
+        log.debug(f"File {exc.filename} not found")
