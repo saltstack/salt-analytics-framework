@@ -7,7 +7,7 @@ import asyncio
 import pathlib
 import os
 import logging
-from typing import AsyncIterator
+from typing import AsyncIterator, Optional
 from typing import Type
 from salt.utils.files import fopen
 from drain3 import TemplateMiner
@@ -25,7 +25,7 @@ class LogCollectConfig(CollectConfigBase):
     Configuration schema for the log collect plugin.
     """
     path: pathlib.Path
-    parse_config: pathlib.Path = None
+    parse_config: Optional[pathlib.Path] = None
     backfill: bool = True
     wait: float = 5
 
