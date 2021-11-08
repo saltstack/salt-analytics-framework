@@ -54,7 +54,7 @@ async def collect(*, config: LogCollectConfig) -> AsyncIterator[CollectedEvent]:
         else:
             log.info("Logs collector will NOT be parsing")
 
-        with fopen(config.path, mode="r") as fp:
+        with config.path.open(mode="r") as fp:
             # If we do not need to gather older logs, we put the cursor at the end of file
             if not config.backfill:
                 fp.seek(0, os.SEEK_END)
