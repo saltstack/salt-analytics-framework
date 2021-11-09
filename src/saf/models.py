@@ -22,6 +22,16 @@ from saf.utils import dt
 log = logging.getLogger(__name__)
 
 
+class NonMutableModel(BaseModel):
+    """
+    Base class for non mutable models.
+    """
+
+    class Config:
+
+        allow_mutation = False
+
+
 class NonMutableConfig(BaseModel):
     """
     Base class for non-mutable configurations.
@@ -234,3 +244,28 @@ class CollectedEvent(BaseModel):
 
     data: Dict[str, Any]
     timestamp: Optional[datetime] = Field(default_factory=dt.utcnow)
+
+
+class SaltEvent(NonMutableModel):
+    """
+    Class representing an event from Salt's event bus.
+    """
+
+    tag: str
+    stamp: datetime
+    data: Dict[str, Any]
+    raw_data: Dict[str, Any]
+
+    @staticmethod
+    def _convert_stamp(stamp: str) -> datetime:
+        _stamp: datetime
+        try:
+            _stamp = datetime.fromisoformat(stamp)
+        except AttributeError:  # pragma: no cover
+            # Python < 3.7
+            _stamp = datetime.strptime(stamp, "%Y-%m-%dT%H:%M:%S.%f")
+        return _stamp
+
+    @validator("stamp")
+    def _validate_stamp(cls, value: str) -> datetime:
+        return SaltEvent._convert_stamp(value)
