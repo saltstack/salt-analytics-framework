@@ -53,6 +53,8 @@ def get_config_dict() -> Optional[Dict[str, Any]]:
         config_dir = pathlib.Path(__opts__["config_dir"])
         config_file = config_dir / "analytics"
         config_dict = yaml.safe_load(config_file.read_text(encoding=__salt_system_encoding__))
+    if config_dict:
+        config_dict["salt_config"] = __opts__.copy()
     return config_dict
 
 

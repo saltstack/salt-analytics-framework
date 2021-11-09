@@ -196,6 +196,7 @@ class AnalyticsConfig(BaseModel):
     processors: Dict[str, ProcessConfigBase]
     forwarders: Dict[str, ForwardConfigBase]
     pipelines: Dict[str, PipelineConfig]
+    salt_config: Dict[str, Any]
 
     @validator("pipelines", pre=True)
     def _validate_pipelines(cls, pipelines: Dict[str, Dict[str, Any]]) -> Dict[str, Dict[str, Any]]:
