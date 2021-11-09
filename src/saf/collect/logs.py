@@ -13,7 +13,6 @@ from typing import Type
 
 from drain3 import TemplateMiner
 from drain3.template_miner_config import TemplateMinerConfig
-from salt.utils.files import fopen
 
 from saf.models import CollectConfigBase
 from saf.models import CollectedEvent
