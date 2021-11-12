@@ -10,6 +10,7 @@ from typing import Any
 from typing import Dict
 from typing import List
 from typing import Optional
+from typing import Union
 
 from pydantic import BaseModel
 from pydantic import Field
@@ -267,5 +268,7 @@ class SaltEvent(NonMutableModel):
         return _stamp
 
     @validator("stamp")
-    def _validate_stamp(cls, value: str) -> datetime:
+    def _validate_stamp(cls, value: Union[str, datetime]) -> datetime:
+        if isinstance(value, datetime):
+            return value
         return SaltEvent._convert_stamp(value)
