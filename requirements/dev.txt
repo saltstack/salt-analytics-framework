@@ -1,0 +1,13 @@
+-r base.txt
+nox
+pre-commit
+mypy>=0.910
+types-attrs
+types-setuptools
+pylint<3.0.0
+pylint-pydantic
+pyenchant
+flake8
+flake8-mypy-fork
+flake8-docstrings
+flake8-typing-imports
