@@ -40,6 +40,7 @@ def _construct_event(event_data: Dict[str, Any]) -> Optional[SaltEvent]:
             data=event_data["data"],
             raw_data=event_raw_data,
         )
+        log.debug("Constructed SaltEvent: %s", salt_event)
     except Exception as exc:
         log.error("Failed to construct a SaltEvent: %s", exc, exc_info=True)
     return salt_event
@@ -72,24 +73,35 @@ def _process_events(
             if event_tag == "__beacons_return":
                 # Special case __beacons_return event since it's basically a container
                 # for all of the Salt's beacon events on each beacons collect iteration
+
                 for beacon_event_data in event_data["beacons"]:
                     for tag in tags:
-                        if fnmatch.fnmatch(beacon_event_data["tag"], tag):
-                            if "_stamp" not in beacon_event_data:
-                                # Wrapped beacon data usually lack the _stamp key/value pair. Use parent's.
-                                beacon_event_data["_stamp"] = event_data["_stamp"]
-                            # Unwrap the nested data key/value pair
-                            beacon_event_data["data"] = beacon_event_data["data"].pop("data")
-                            log.debug(
-                                "Matching Beacon event; TAG: %r DATA: %r",
-                                beacon_event_data["tag"],
-                                beacon_event_data["data"],
+                        try:
+                            if fnmatch.fnmatch(beacon_event_data["tag"], tag):
+                                if "_stamp" not in beacon_event_data:
+                                    # Wrapped beacon data usually lack the _stamp key/value pair. Use parent's.
+                                    beacon_event_data["_stamp"] = event_data["_stamp"]
+                                # Unwrap the nested data key/value pair if needed
+                                if "data" in beacon_event_data["data"]:
+                                    beacon_event_data["data"] = beacon_event_data["data"].pop(
+                                        "data"
+                                    )
+                                log.debug(
+                                    "Matching Beacon event; TAG: %r DATA: %r",
+                                    beacon_event_data["tag"],
+                                    beacon_event_data["data"],
+                                )
+                                salt_event = _construct_event(beacon_event_data)
+                                if salt_event:
+                                    events_queue.put_nowait(salt_event)
+                                # We found a matching tag, stop iterating tags
+                                break
+                        except Exception as exc:  # pylint: disable=broad-except
+                            log.error(
+                                "Ran into an error while processing beacon events: %s",
+                                exc,
+                                exc_info=True,
                             )
-                            salt_event = _construct_event(beacon_event_data)
-                            if salt_event:
-                                events_queue.put_nowait(salt_event)
-                            # We found a matching tag, stop iterating tags
-                            break
                 # No additional processing required, process to next event from the event bus
                 continue
 
