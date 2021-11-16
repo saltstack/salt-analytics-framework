@@ -108,7 +108,7 @@ def test__shannon_process_with_mask_char(data: Dict[str, Any], sub_data: Dict[st
     )
     masked_data = copy.deepcopy(data)
     masked_sub_data = copy.deepcopy(sub_data)
-    asterisks = "*" * len("000123456789abcdef0123456789abcdef0123456789abcdefdab")
+    asterisks = "*" * len("000123456789abcdef0123456789abcdefdab")
 
     masked_data["high_hex_entropy"] = f"I'm gonna make him an {asterisks} he can't refuse."
 
