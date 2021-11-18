@@ -13,6 +13,7 @@
 #
 import datetime
 import os
+import pathlib
 import sys
 
 try:
@@ -22,11 +23,13 @@ except ImportError:
 
 
 try:
-    docs_basepath = os.path.abspath(os.path.dirname(__file__))
+    DOCS_BASEPATH = pathlib.Path(__file__).resolve().parent
 except NameError:
     # sphinx-intl and six execute some code which will raise this NameError
     # assume we're in the doc/ directory
-    docs_basepath = os.path.abspath(os.path.dirname("."))
+    DOCS_BASEPATH = pathlib.Path(".").resolve().parent
+
+REPO_ROOT = DOCS_BASEPATH.parent
 
 addtl_paths = (
     os.path.join(os.pardir, "src"),  # salt-analytics-framework itself (for autodoc)
@@ -34,7 +37,7 @@ addtl_paths = (
 )
 
 for addtl_path in addtl_paths:
-    sys.path.insert(0, os.path.abspath(os.path.join(docs_basepath, addtl_path)))
+    sys.path.insert(0, os.path.abspath(os.path.join(DOCS_BASEPATH, addtl_path)))
 
 dist = distribution("salt-analytics-framework")
 
@@ -78,6 +81,8 @@ extensions = [
     "sphinx.ext.coverage",
     "sphinx_copybutton",
     "sphinxcontrib.spelling",
+    "sphinxcontrib.towncrier",
+    "sphinxcontrib.autodoc_pydantic",
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -99,6 +104,8 @@ exclude_patterns = [
 ]
 
 autosummary_generate = True
+modindex_common_prefix = ["saf."]
+master_doc = "contents"
 
 # -- Options for HTML output -------------------------------------------------
 
@@ -148,6 +155,21 @@ intersphinx_mapping = {
 autodoc_default_options = {"member-order": "bysource"}
 autodoc_mock_imports = ["salt"]
 # <---- Autodoc Config -----------------------------------------------------------------------------------------------
+
+# ----- Towncrier Draft Release ------------------------------------------------------------------------------------->
+# Options: draft/sphinx-version/sphinx-release
+towncrier_draft_autoversion_mode = "draft"
+towncrier_draft_include_empty = True
+towncrier_draft_working_directory = REPO_ROOT
+# Not yet supported:
+# towncrier_draft_config_path = 'pyproject.toml'  # relative to cwd
+# <---- Towncrier Draft Release --------------------------------------------------------------------------------------
+
+# ----- Pydantic Autodoc -------------------------------------------------------------------------------------------->
+autodoc_pydantic_model_show_json = True
+autodoc_pydantic_settings_show_json = False
+autodoc_pydantic_model_show_validator_summary = True
+# <---- Pydantic Autodoc ---------------------------------------------------------------------------------------------
 
 
 def setup(app):

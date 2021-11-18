@@ -8,6 +8,6 @@ Table Of Contents
 .. toctree::
    :maxdepth: 3
 
-   ref/saf/index
+   ref/saf
    changelog
    GitHub Repository <https://github.com/saltstack/salt-analytics-framework>

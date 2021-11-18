@@ -414,7 +414,7 @@ def docs(session):
     )
     os.chdir("docs/")
     session.run("make", "clean", external=True)
-    session.run("make", "linkcheck", "SPHINXOPTS=-W", external=True)
+    # session.run("make", "linkcheck", "SPHINXOPTS=-W", external=True)
     session.run("make", "coverage", "SPHINXOPTS=-W", external=True)
     docs_coverage_file = os.path.join("_build", "html", "python.txt")
     if os.path.exists(docs_coverage_file):
@@ -540,7 +540,6 @@ def gen_api_docs(session):
         pass
     session.run(
         "sphinx-apidoc",
-        "--implicit-namespaces",
         "--module-first",
         "-o",
         "docs/ref/",

@@ -10,10 +10,8 @@ write_to_template = "# pylint: skip-file\n\n__version__ = \"{version}\""
 line-length = 100
 
 [tool.towncrier]
-package = "pytestskipmarkers"
 filename = "CHANGELOG.rst"
 directory = "changelog/"
-title_format = "skip-markers {version} ({project_date})"
 template = "changelog/_template.rst"
 
   [[tool.towncrier.type]]

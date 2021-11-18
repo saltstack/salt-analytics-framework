@@ -8,9 +8,3 @@ Complete List of salt-analytics-framework
    :maxdepth: 2
 
    ref/modules.rst
-
-
-.. toctree::
-   :maxdepth: 2
-
-   ref/states.rst
