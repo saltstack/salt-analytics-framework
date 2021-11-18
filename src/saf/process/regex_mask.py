@@ -11,8 +11,7 @@ from typing import Match
 from typing import Optional
 from typing import Type
 
-from pydantic import validator
-
+from pydantic import Field
 from saf.models import CollectedEvent
 from saf.models import ProcessConfigBase
 
@@ -26,18 +25,9 @@ class RegexMaskProcessConfig(ProcessConfigBase):
     """
 
     rules: Dict[str, str]
-    mask_char: Optional[str]
+    mask_char: Optional[str] = Field(min_length=1, max_length=1)
     mask_prefix: str = "<:"
     mask_suffix: str = ":>"
-
-    @validator("mask_char")
-    def check_one_char(cls, v: str) -> str:
-        """
-        The mask character must be exactly one character.
-        """
-        if v:
-            assert len(v) == 1
-        return v
 
 
 def get_config_schema() -> Type[ProcessConfigBase]:
