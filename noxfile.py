@@ -111,16 +111,19 @@ def _install_requirements(
             )
             install_command = ["--progress-bar=off"]
             install_command += [req.strip() for req in EXTRA_REQUIREMENTS_INSTALL.split()]
-            session.install(*passed_requirements, silent=PIP_INSTALL_SILENT)
+            session.install(*install_command, silent=PIP_INSTALL_SILENT)
+
+        if passed_requirements:
+            session.install("--progress-bar=off", *passed_requirements, silent=PIP_INSTALL_SILENT)
 
         if install_source:
             pkg = "."
             if install_extras:
                 pkg += f"[{','.join(install_extras)}]"
-            session.install("-e", pkg, silent=PIP_INSTALL_SILENT)
+            session.install("--progress-bar=off", "-e", pkg, silent=PIP_INSTALL_SILENT)
         elif install_extras:
             pkg = f".[{','.join(install_extras)}]"
-            session.install(pkg, silent=PIP_INSTALL_SILENT)
+            session.install("--progress-bar=off", pkg, silent=PIP_INSTALL_SILENT)
 
 
 @nox.session(python=PYTHON_VERSIONS)
