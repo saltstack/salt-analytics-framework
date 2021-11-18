@@ -10,7 +10,7 @@ from typing import Dict
 from typing import Optional
 from typing import Type
 
-from pydantic import validator
+from pydantic import Field
 
 from saf.models import CollectedEvent
 from saf.models import ProcessConfigBase
@@ -25,56 +25,13 @@ class ShannonMaskProcessConfig(ProcessConfigBase):
     """
 
     mask_str: str = "HIGH-ENTROPY"
-    mask_char: Optional[str]
+    mask_char: Optional[str] = Field(min_length=1, max_length=1)
     mask_prefix: str = "<:"
     mask_suffix: str = ":>"
-    h_threshold: float = 0.9
-    length_threshold: int = 16
-    delimeter: str = " "
-    alphabet: str = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/="
-
-    @validator("mask_char")
-    def check_one_char(cls, v: str) -> str:
-        """
-        The mask character must be exactly one character.
-        """
-        if v:
-            assert len(v) == 1
-        return v
-
-    @validator("h_threshold")
-    def check_h_threshold_bounds(cls, v: float) -> float:
-        """
-        The Shannon threshold must be between 0 and 1, both inclusively.
-        """
-        assert v <= 1 and v >= 0
-        return v
-
-    @validator("length_threshold")
-    def check_length_threshold_bounds(cls, v: int) -> int:
-        """
-        The length threshold should be greater than 1.
-
-        Entropy on 1 character strings will always be maximal.
-        """
-        assert v > 1
-        return v
-
-    @validator("delimeter")
-    def check_delimeter_one_char(cls, v: str) -> str:
-        """
-        The delimeter should be exactly one character.
-        """
-        assert len(v) == 1
-        return v
-
-    @validator("alphabet")
-    def check_alphabet_more_than_one_char(cls, v: str) -> str:
-        """
-        We expect the alphabet to have more than one character.
-        """
-        assert len(v) > 1
-        return v
+    h_threshold: float = Field(0.9, ge=0.0, le=1.0)
+    length_threshold: int = Field(16, gt=1)
+    delimeter: str = Field(" ", min_length=1, max_length=1)
+    alphabet: str = Field(f"{string.ascii_letters}{string.digits}+/=", min_length=1)
 
 
 def get_config_schema() -> Type[ProcessConfigBase]:
