@@ -12,6 +12,7 @@ from typing import Optional
 from typing import Type
 
 from pydantic import Field
+
 from saf.models import CollectedEvent
 from saf.models import ProcessConfigBase
 
