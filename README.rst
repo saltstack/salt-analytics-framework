@@ -59,18 +59,17 @@ Configuration
 The minimal configuration to start salt analytics with `Salt`_ is to add it to Salt's engines
 configuration:
 
-.. literalinclude:: demo/analytics-beacons.conf
+.. literalinclude:: ../demo/analytics-beacons.conf
+   :language: yaml
    :name: /etc/salt/minion
    :lines: 1,2
 
-   engines:
-     - analytics
 
 Example Pipeline
 ----------------
 
-.. literalinclude:: demo/analytics-beacons.conf
-   language: yaml
+.. literalinclude:: ../demo/analytics-beacons.conf
+   :language: yaml
    :name: /etc/salt/analytics
    :lines: 4-
 
