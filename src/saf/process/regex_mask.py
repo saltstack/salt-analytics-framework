@@ -67,15 +67,19 @@ def _regex_mask(event_piece: str, config: RegexMaskProcessConfig) -> str:
     return event_piece
 
 
-def _regex_process(obj: Dict[str, Any], config: RegexMaskProcessConfig) -> Dict[str, Any]:
+def _regex_process(obj: Any, config: RegexMaskProcessConfig) -> Any:
     """
     Recursive method to iterate over dictionary and apply rules to all str values.
     """
-    # Iterate over all attributes of obj.  If string, do mask.  If dict, recurse.  Else, do nothing.
-    for key, value in obj.items():
-        if isinstance(value, str):
-            obj[key] = _regex_mask(value, config)
-        elif isinstance(value, dict):
+    # Iterate over all attributes of obj.  If string, do mask.  If dict, set, tuple, or list -> recurse.
+    if isinstance(obj, str):
+        return _regex_mask(obj, config)
+    elif isinstance(obj, list) or isinstance(obj, tuple) or isinstance(obj, set):
+        # breakpoint()
+        klass = type(obj)
+        return klass(_regex_process(i, config) for i in obj)
+    elif isinstance(obj, dict):
+        for key, value in obj.items():
             obj[key] = _regex_process(value, config)
     return obj
 

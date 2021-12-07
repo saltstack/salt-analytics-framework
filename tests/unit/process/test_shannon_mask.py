@@ -37,6 +37,17 @@ def sub_data() -> Dict[str, Any]:
         "ip_address": "My IP is 127.0.0.1",
         "integer": 12,
         "zero_hex_entropy": "What is the airspeed velocity of an unladen swallow? aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "list_test": [
+            "not bad stuff",
+            "bad stuff d37a6115d8972f960fec0be035b44a2dab08c",
+            "more good stuff",
+        ],
+        "tuple_test": ("not bad stuff", "bad stuff a244ac72d869901ba830635ed10e5bcdffb70"),
+        "set_test": {
+            "not bad stuff",
+            "bad stuff 685865eafa2f3077db3a110c9bd0b2c9ed440",
+            "more good stuff",
+        },
     }
     return sub_data
 
@@ -88,6 +99,9 @@ def test__shannon_process(data: Dict[str, Any], sub_data: Dict[str, Any]) -> Non
     masked_sub_data = copy.deepcopy(sub_data)
 
     masked_data["high_hex_entropy"] = "I'm gonna make him an offer he can't refuse."
+    masked_sub_data["list_test"] = ["not bad stuff", "bad stuff offer", "more good stuff"]
+    masked_sub_data["tuple_test"] = ("not bad stuff", "bad stuff offer")
+    masked_sub_data["set_test"] = {"not bad stuff", "bad stuff offer", "more good stuff"}
 
     event = SubclassedCollectedEvent(data=data, new_field=CollectedEvent(data=sub_data))
     expected = SubclassedCollectedEvent(
@@ -111,6 +125,9 @@ def test__shannon_process_with_mask_char(data: Dict[str, Any], sub_data: Dict[st
     asterisks = "*" * len("000123456789abcdef0123456789abcdefdab")
 
     masked_data["high_hex_entropy"] = f"I'm gonna make him an {asterisks} he can't refuse."
+    masked_sub_data["list_test"] = ["not bad stuff", f"bad stuff {asterisks}", "more good stuff"]
+    masked_sub_data["tuple_test"] = ("not bad stuff", f"bad stuff {asterisks}")
+    masked_sub_data["set_test"] = {"not bad stuff", f"bad stuff {asterisks}", "more good stuff"}
 
     event = SubclassedCollectedEvent(data=data, new_field=CollectedEvent(data=sub_data))
     expected = SubclassedCollectedEvent(
