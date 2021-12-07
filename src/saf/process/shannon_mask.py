@@ -7,7 +7,6 @@ import logging
 import math
 import string
 from typing import Any
-from typing import Dict
 from typing import Optional
 from typing import Type
 
@@ -97,15 +96,19 @@ def _shannon_mask(event_piece: str, config: ShannonMaskProcessConfig) -> str:
     return event_piece
 
 
-def _shannon_process(obj: Dict[str, Any], config: ShannonMaskProcessConfig) -> Dict[str, Any]:
+def _shannon_process(obj: Any, config: ShannonMaskProcessConfig) -> Any:
     """
     Recursive method to iterate over dictionary and apply rules to all str values.
     """
     # Iterate over all attributes of obj.  If string, do mask.  If dict, recurse.  Else, do nothing.
-    for key, value in obj.items():
-        if isinstance(value, str):
-            obj[key] = _shannon_mask(value, config)
-        elif isinstance(value, dict):
+    if isinstance(obj, str):
+        return _shannon_mask(obj, config)
+    elif isinstance(obj, list) or isinstance(obj, tuple) or isinstance(obj, set):
+        # breakpoint()
+        klass = type(obj)
+        return klass(_shannon_process(i, config) for i in obj)
+    elif isinstance(obj, dict):
+        for key, value in obj.items():
             obj[key] = _shannon_process(value, config)
     return obj
 
@@ -116,7 +119,7 @@ async def process(  # pylint: disable=unused-argument
     event: CollectedEvent,
 ) -> CollectedEvent:
     """
-    Method called to mask the data based on provided regex rules.
+    Method called to mask the data based on normalized Shannon index values.
     """
     log.info(f"Processing event in shannon_mask: {event.json()}")
     event_dict = event.dict()

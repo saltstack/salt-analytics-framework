@@ -36,6 +36,9 @@ def data() -> Dict[str, Any]:
         "secret_key": "This is my secret key KEY::1234567890. Nice.",
         "nothing": "",
         "no_repl": "Nothing will be replaced in here.",
+        "list_test": ["not bad stuff", "bad stuff KEY::0987654321", "more good stuff"],
+        "tuple_test": ("not bad stuff", "bad stuff KEY::0987654321"),
+        "set_test": {"not bad stuff", "bad stuff KEY::0987654321", "more good stuff"},
     }
     return data
 
@@ -60,6 +63,9 @@ def test__regex_process(
     masked_sub_data = copy.deepcopy(sub_data)
 
     masked_data["secret_key"] = "This is my secret key <:SECRET:>. Nice."
+    masked_data["list_test"] = ["not bad stuff", "bad stuff <:SECRET:>", "more good stuff"]
+    masked_data["tuple_test"] = ("not bad stuff", "bad stuff <:SECRET:>")
+    masked_data["set_test"] = {"not bad stuff", "bad stuff <:SECRET:>", "more good stuff"}
     masked_sub_data["ip_address"] = "My IP is <:IP:>"
 
     event = SubclassedCollectedEvent(data=data, new_field=CollectedEvent(data=sub_data))
@@ -83,6 +89,9 @@ def test__regex_process_with_mask_char(
     masked_sub_data = copy.deepcopy(sub_data)
 
     masked_data["secret_key"] = "This is my secret key ***************. Nice."
+    masked_data["list_test"] = ["not bad stuff", "bad stuff ***************", "more good stuff"]
+    masked_data["tuple_test"] = ("not bad stuff", "bad stuff ***************")
+    masked_data["set_test"] = {"not bad stuff", "bad stuff ***************", "more good stuff"}
     masked_sub_data["ip_address"] = "My IP is *********"
 
     event = SubclassedCollectedEvent(data=data, new_field=CollectedEvent(data=sub_data))
