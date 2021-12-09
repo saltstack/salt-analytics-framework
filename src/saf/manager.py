@@ -7,6 +7,7 @@ import asyncio
 import logging
 from asyncio import Task
 from typing import Dict
+from typing import Optional
 
 import aiorun
 
@@ -54,28 +55,43 @@ class Manager:
         Start the pipelines.
         """
         for name in self.pipelines:
-            await self.start_pipeline(name)
+            result = await self.start_pipeline(name)
+            if result is not None:
+                log.warning(result)
 
     async def stop_pipelines(self) -> None:
         """
         Stop the pipelines.
         """
         for name in list(self.pipeline_tasks):
-            await self.stop_pipeline(name)
+            result = await self.stop_pipeline(name)
+            if result is not None:
+                log.warning(result)
 
-    async def start_pipeline(self, name: str) -> None:
+    async def start_pipeline(self, name: str) -> Optional[str]:
         """
         Start a pipeline by name.
         """
         log.info("Starting pipeline %r", name)
-        self.pipeline_tasks[name] = self.loop.create_task(self.pipelines[name].run())
+        if name not in self.pipelines:
+            return f"Cannot start unknown pipeline {name!r}"
+        pipeline = self.pipelines[name]
+        if pipeline.config.enabled is False:
+            return f"Pipeline {name!r} is disabled, skipping start."
+        if name in self.pipeline_tasks:
+            return f"Pipeline {name!r} is already running"
+        self.pipeline_tasks[name] = self.loop.create_task(pipeline.run())
+        return None
 
-    async def stop_pipeline(self, name: str) -> None:
+    async def stop_pipeline(self, name: str) -> Optional[str]:
         """
         Stop a pipeline by name.
         """
         log.info("Stopping pipeline %r", name)
-        task = self.pipeline_tasks[name]
-        task.cancel()
-        await task
-        self.pipeline_tasks.pop(name)
+        if name not in self.pipeline_tasks:
+            return f"Pipeline {name!r} is not running. Not stopping it."
+        task = self.pipeline_tasks.pop(name)
+        if task.done() is not True:
+            task.cancel()
+            await task
+        return None

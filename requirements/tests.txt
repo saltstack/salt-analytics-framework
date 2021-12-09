@@ -1,3 +1,4 @@
 -r base.txt
 pytest>=6.0.0
 pytest-salt-factories==0.911.0
+pytest-asyncio
