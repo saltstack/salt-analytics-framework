@@ -196,6 +196,7 @@ class PipelineConfig(NonMutableConfig):
     collect: str
     process: List[str]
     forward: List[str]
+    enabled: bool = True
 
 
 class AnalyticsConfig(BaseModel):
@@ -225,6 +226,7 @@ class AnalyticsConfig(BaseModel):
             pipelines[name]["collect"] = collect
             pipelines[name]["process"] = process
             pipelines[name]["forward"] = forward
+            pipelines[name].setdefault("enabled", True)
         return pipelines
 
     def _init_private_attributes(self) -> None:
