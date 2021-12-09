@@ -61,7 +61,7 @@ def minion(master: SaltMaster, analytics_events_dump_directory) -> SaltMinion:
     with pytest.helpers.temp_file(
         "analytics", contents=analytics_config, directory=factory.config_dir
     ):
-        with factory.started("-l", "trace"):
+        with factory.started():
             yield factory
 
 
