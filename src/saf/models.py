@@ -89,7 +89,6 @@ class CollectConfigBase(PluginConfigMixin):
             try:
                 get_schema_func = plugin_module.get_config_schema  # type: ignore[attr-defined]
                 cls = get_schema_func()  # pylint: disable=self-cls-assignment
-                print(cls)
             except AttributeError:
                 log.debug(
                     "The %r collect plugin does not provide a 'get_config_schema' function, defaulting to %s",
@@ -99,7 +98,6 @@ class CollectConfigBase(PluginConfigMixin):
         except KeyError:
             pass
         instance: CollectConfigBase = PluginConfigMixin.__new__(cls)
-        print(instance)
         return instance
 
     @property
