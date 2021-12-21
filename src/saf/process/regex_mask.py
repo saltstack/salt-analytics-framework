@@ -74,8 +74,7 @@ def _regex_process(obj: Any, config: RegexMaskProcessConfig) -> Any:
     # Iterate over all attributes of obj.  If string, do mask.  If dict, set, tuple, or list -> recurse.
     if isinstance(obj, str):
         return _regex_mask(obj, config)
-    elif isinstance(obj, list) or isinstance(obj, tuple) or isinstance(obj, set):
-        # breakpoint()
+    elif isinstance(obj, (list, tuple, set)):
         klass = type(obj)
         return klass(_regex_process(i, config) for i in obj)
     elif isinstance(obj, dict):

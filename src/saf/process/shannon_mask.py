@@ -103,7 +103,7 @@ def _shannon_process(obj: Any, config: ShannonMaskProcessConfig) -> Any:
     # Iterate over all attributes of obj.  If string, do mask.  If dict, recurse.  Else, do nothing.
     if isinstance(obj, str):
         return _shannon_mask(obj, config)
-    elif isinstance(obj, list) or isinstance(obj, tuple) or isinstance(obj, set):
+    elif isinstance(obj, (list, tuple, set)):
         # breakpoint()
         klass = type(obj)
         return klass(_shannon_process(i, config) for i in obj)
