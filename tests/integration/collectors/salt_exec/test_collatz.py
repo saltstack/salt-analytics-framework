@@ -7,9 +7,6 @@ import pathlib
 import time
 
 import pytest
-from saltfactories.daemons.master import SaltMaster
-from saltfactories.daemons.minion import SaltMinion
-from saltfactories.utils import random_string
 
 from saf.models import CollectedEvent
 
@@ -18,12 +15,8 @@ log = logging.getLogger(__name__)
 
 
 @pytest.fixture(scope="module")
-def minion(master: SaltMaster, analytics_events_dump_directory) -> SaltMinion:
-    default_config = {
-        "engines": ["analytics"],
-    }
-    factory = master.salt_minion_daemon(random_string("minion-"), defaults=default_config)
-    analytics_config = """
+def analytics_config_contents(analytics_events_dump_directory) -> str:
+    return """
     collectors:
       salt-collector:
         plugin: salt_exec
@@ -53,14 +46,9 @@ def minion(master: SaltMaster, analytics_events_dump_directory) -> SaltMinion:
     """.format(
         analytics_events_dump_directory
     )
-    with pytest.helpers.temp_file(
-        "analytics", contents=analytics_config, directory=factory.config_dir
-    ):
-        with factory.started():
-            yield factory
 
 
-def test_pipeline(minion, analytics_events_dump_directory: pathlib.Path):
+def test_pipeline(analytics_events_dump_directory: pathlib.Path):
     """
     Test output of test.collatz being dumped to disk.
     """
