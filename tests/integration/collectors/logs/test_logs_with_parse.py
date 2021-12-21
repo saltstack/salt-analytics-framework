@@ -3,17 +3,9 @@
 #
 import json
 import pathlib
-import shutil
 import time
 
 import pytest
-
-
-@pytest.fixture(scope="module")
-def temp_logs_dir(tmp_path_factory):
-    tmp_dir = tmp_path_factory.mktemp("logs")
-    yield tmp_dir
-    shutil.rmtree(tmp_dir)
 
 
 @pytest.fixture(scope="module")
