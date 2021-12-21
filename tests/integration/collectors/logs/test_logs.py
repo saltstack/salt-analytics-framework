@@ -3,21 +3,21 @@
 #
 import json
 import pathlib
+import shutil
 import time
 
 import pytest
-from saltfactories.daemons.master import SaltMaster
-from saltfactories.daemons.minion import SaltMinion
-from saltfactories.utils import random_string
 
 
-@pytest.fixture(scope="module", autouse=True)
-def minion(master: SaltMaster, analytics_events_dump_directory, tmp_path_factory) -> SaltMinion:
-    default_config = {
-        "engines": ["analytics"],
-    }
-    factory = master.salt_minion_daemon(random_string("minion-"), defaults=default_config)
+@pytest.fixture(scope="module")
+def temp_logs_dir(tmp_path_factory):
+    tmp_dir = tmp_path_factory.mktemp("logs")
+    yield tmp_dir
+    shutil.rmtree(tmp_dir)
 
+
+@pytest.fixture(scope="module")
+def log_file(temp_logs_dir):
     # Extracted from https://github.com/logpai/logparser/
     log_content = """
     081109 203615 148 INFO dfs.Data$Node: Node 1 for block blk_38865049064139660 terminating
@@ -31,11 +31,14 @@ def minion(master: SaltMaster, analytics_events_dump_directory, tmp_path_factory
     081109 204525 512 INFO dfs.Data$Node: Node 2 for block blk_572492839287299681 terminating
     """
 
-    config_path = tmp_path_factory.mktemp("logs_collector")
-
-    test_log_file = config_path / "test_log"
+    test_log_file = temp_logs_dir / "test_log"
     test_log_file.write_text(log_content)
 
+    return test_log_file
+
+
+@pytest.fixture(scope="module")
+def analytics_config_contents(log_file, analytics_events_dump_directory):
     analytics_config = """
     collectors:
       logs-collector:
@@ -61,14 +64,10 @@ def minion(master: SaltMaster, analytics_events_dump_directory, tmp_path_factory
         process: noop-processor
         forward: disk-forwarder
     """.format(
-        test_log_file, analytics_events_dump_directory
+        log_file, analytics_events_dump_directory
     )
 
-    with pytest.helpers.temp_file(
-        "analytics", contents=analytics_config, directory=factory.config_dir
-    ):
-        with factory.started("-l", "trace"):
-            yield factory
+    return analytics_config
 
 
 def test_pipeline(analytics_events_dump_directory: pathlib.Path):
