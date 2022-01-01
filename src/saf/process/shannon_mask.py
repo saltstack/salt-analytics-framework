@@ -1,4 +1,4 @@
-# Copyright 2021 VMware, Inc.
+# Copyright 2021-2022 VMware, Inc.
 # SPDX-License-Identifier: Apache-2.0
 """
 Mask data based using a length-relative normalized version of the Shannon Index as an indicator of entropy.
