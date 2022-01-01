@@ -1,4 +1,4 @@
-# Copyright 2021 VMware, Inc.
+# Copyright 2021-2022 VMware, Inc.
 # SPDX-License-Identifier: Apache-2.0
 """
 A collect plugin that simply collects the output of a salt execution module.
