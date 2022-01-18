@@ -32,3 +32,11 @@ saf.collect.noop module
    :members:
    :undoc-members:
    :show-inheritance:
+
+saf.collect.salt\_exec module
+-----------------------------
+
+.. automodule:: saf.collect.salt_exec
+   :members:
+   :undoc-members:
+   :show-inheritance:
