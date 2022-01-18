@@ -16,3 +16,19 @@ saf.process.noop module
    :members:
    :undoc-members:
    :show-inheritance:
+
+saf.process.regex\_mask module
+------------------------------
+
+.. automodule:: saf.process.regex_mask
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+saf.process.shannon\_mask module
+--------------------------------
+
+.. automodule:: saf.process.shannon_mask
+   :members:
+   :undoc-members:
+   :show-inheritance:
