@@ -80,7 +80,7 @@ def catch_entry_points_exception(entry_point: str) -> Generator[types.SimpleName
     except Exception as exc:  # pylint: disable=broad-except
         context.exception_caught = True
         entry_point_details = entrypoints.name_and_version_from_entry_point(entry_point)
-        log.error(
+        log.error(  # type: ignore[call-arg]
             "Error processing Salt Analytics Framework Plugin %s(version: %s): %s",
             entry_point_details.name,
             entry_point_details.version,

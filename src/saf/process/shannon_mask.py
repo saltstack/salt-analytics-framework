@@ -47,6 +47,7 @@ def _calculate_normalized_shannon_index(word: str, alphabet: str) -> float:
 
     Shannon Diversity index: https://www.itl.nist.gov/div898/software/dataplot/refman2/auxillar/shannon.htm
     """
+    # pylint: disable=invalid-name
     word_len = len(word)
     alphabet_len = len(alphabet)
     p_dict = {i: word.count(i) / word_len for i in word if i in alphabet}
@@ -62,6 +63,7 @@ def _calculate_normalized_shannon_index(word: str, alphabet: str) -> float:
     p_d = d / word_len
     h_max = -(r * p_r * math.log(p_r)) - ((alphabet_len - r) * p_d * math.log(p_d))
     return h / h_max
+    # pylint: enable=invalid-name
 
 
 def _shannon_mask(event_piece: str, config: ShannonMaskProcessConfig) -> str:
@@ -91,7 +93,7 @@ def _shannon_mask(event_piece: str, config: ShannonMaskProcessConfig) -> str:
                 if h_norm > config.h_threshold:
                     event_piece = event_piece.replace(word, repl_fn(word))
     except Exception as exc:  # pylint: disable=broad-except
-        log.error(f"Failed to mask value '{orig_str}' with message {exc}.  Skipping.")
+        log.error("Failed to mask value '%s' with message %s.  Skipping.", orig_str, exc)
 
     return event_piece
 

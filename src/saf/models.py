@@ -87,7 +87,7 @@ class CollectConfigBase(PluginConfigMixin):
         try:
             plugin_module = PluginsList.instance().collectors[plugin]
             try:
-                get_schema_func = plugin_module.get_config_schema  # type: ignore[attr-defined]
+                get_schema_func = plugin_module.get_config_schema
                 cls = get_schema_func()  # pylint: disable=self-cls-assignment
             except AttributeError:
                 log.debug(
@@ -127,7 +127,7 @@ class ProcessConfigBase(PluginConfigMixin):
         try:
             plugin_module = PluginsList.instance().processors[plugin]
             try:
-                get_schema_func = plugin_module.get_config_schema  # type: ignore[attr-defined]
+                get_schema_func = plugin_module.get_config_schema
                 cls = get_schema_func()  # pylint: disable=self-cls-assignment
             except AttributeError:
                 log.debug(
@@ -167,7 +167,7 @@ class ForwardConfigBase(PluginConfigMixin):
         try:
             plugin_module = PluginsList.instance().forwarders[plugin]
             try:
-                get_schema_func = plugin_module.get_config_schema  # type: ignore[attr-defined]
+                get_schema_func = plugin_module.get_config_schema
                 cls = get_schema_func()  # pylint: disable=self-cls-assignment
             except AttributeError:
                 log.debug(
