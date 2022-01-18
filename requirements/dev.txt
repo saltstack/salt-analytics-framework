@@ -4,7 +4,8 @@ pre-commit
 mypy>=0.910
 types-attrs
 types-setuptools
-pylint<3.0.0
+pylint==2.12.2
+astroid==2.9.3
 pylint-pydantic
 pyenchant
 flake8

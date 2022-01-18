@@ -8,16 +8,19 @@ import copy
 import fnmatch
 import logging
 import queue
-from queue import Queue
 from typing import Any
 from typing import AsyncIterator
 from typing import Dict
 from typing import Optional
 from typing import Set
+from typing import TYPE_CHECKING
 
 import salt.utils.event
 
 from saf.models import SaltEvent
+
+if TYPE_CHECKING:
+    from queue import Queue
 
 log = logging.getLogger(__name__)
 
@@ -41,7 +44,7 @@ def _construct_event(event_data: Dict[str, Any]) -> Optional[SaltEvent]:
             raw_data=event_raw_data,
         )
         log.debug("Constructed SaltEvent: %s", salt_event)
-    except Exception as exc:
+    except Exception as exc:  # pylint: disable=broad-except
         log.error("Failed to construct a SaltEvent: %s", exc, exc_info=True)
     return salt_event
 

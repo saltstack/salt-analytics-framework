@@ -106,7 +106,6 @@ def _shannon_process(obj: Any, config: ShannonMaskProcessConfig) -> Any:
     if isinstance(obj, str):
         return _shannon_mask(obj, config)
     elif isinstance(obj, (list, tuple, set)):
-        # breakpoint()
         klass = type(obj)
         return klass(_shannon_process(i, config) for i in obj)
     elif isinstance(obj, dict):
@@ -123,7 +122,7 @@ async def process(  # pylint: disable=unused-argument
     """
     Method called to mask the data based on normalized Shannon index values.
     """
-    log.info(f"Processing event in shannon_mask: {event.json()}")
+    log.info("Processing event in shannon_mask: %s", event.json())
     event_dict = event.dict()
     processed_event_dict = _shannon_process(event_dict, config)
     processed_event = event.parse_obj(processed_event_dict)

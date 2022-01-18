@@ -91,7 +91,7 @@ async def process(  # pylint: disable=unused-argument
     """
     Method called to mask the data based on provided regex rules.
     """
-    log.info(f"Processing event in regex_mask: {event.json()}")
+    log.info("Processing event in regex_mask: %s", event.json())
     event_dict = event.dict()
     processed_event_dict = _regex_process(event_dict, config)
     processed_event = event.parse_obj(processed_event_dict)

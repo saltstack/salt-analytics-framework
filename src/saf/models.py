@@ -211,6 +211,7 @@ class AnalyticsConfig(BaseModel):
     salt_config: Dict[str, Any]
 
     @validator("pipelines", pre=True)
+    @classmethod
     def _validate_pipelines(cls, pipelines: Dict[str, Dict[str, Any]]) -> Dict[str, Dict[str, Any]]:
         for name, data in pipelines.items():
             collect = data["collect"]
@@ -270,6 +271,7 @@ class SaltEvent(NonMutableModel):
         return _stamp
 
     @validator("stamp")
+    @classmethod
     def _validate_stamp(cls, value: Union[str, datetime]) -> datetime:
         if isinstance(value, datetime):
             return value
