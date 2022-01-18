@@ -3,6 +3,7 @@
 """
 Mask data based on provided regex rules.
 """
+import functools
 import logging
 import re
 from typing import Any
@@ -43,7 +44,7 @@ def _regex_mask(event_piece: str, config: RegexMaskProcessConfig) -> str:
     Go through the string and process based on regex rules.
     """
 
-    def repl_fn(match: Match[Any]) -> str:
+    def repl_fn(rule_name: str, match: Match[Any]) -> str:
         """
         The replacement function to be called on each match.
 
@@ -60,9 +61,9 @@ def _regex_mask(event_piece: str, config: RegexMaskProcessConfig) -> str:
 
     try:
         for rule_name, pattern in config.rules.items():
-            event_piece = re.sub(pattern, repl_fn, event_piece)
+            event_piece = re.sub(pattern, functools.partial(repl_fn, rule_name), event_piece)
     except Exception as exc:  # pylint: disable=broad-except
-        log.error(f"Failed to mask value '{orig_str}' with message {exc}.  Skipping.")
+        log.error("Failed to mask value '%s' with message %s.  Skipping.", orig_str, exc)
 
     return event_piece
 
