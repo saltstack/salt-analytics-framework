@@ -364,7 +364,7 @@ def lint_tests(session):
     """
     Run PyLint against the test suite. Set PYLINT_REPORT to a path to capture output.
     """
-    flags = ["--disable=I,redefined-outer-name,no-member"]
+    flags = ["--disable=I,redefined-outer-name,no-member,unused-argument"]
     if session.posargs:
         paths = session.posargs
     else:

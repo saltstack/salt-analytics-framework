@@ -4,7 +4,7 @@
 The beacons collect plugin exists as an implementation example.
 
 It listens to Salt's event bus for beacon events and generates
-anaylitics events based off of those.
+analytics events based off of those.
 """
 import logging
 from datetime import datetime
@@ -54,6 +54,7 @@ class BeaconCollectedEvent(CollectedEvent):
         return _stamp
 
     @validator("stamp")
+    @classmethod
     def _validate_stamp(cls, value: Union[str, datetime]) -> datetime:
         if isinstance(value, datetime):
             return value

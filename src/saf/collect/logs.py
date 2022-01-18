@@ -42,6 +42,7 @@ class LogCollectConfig(CollectConfigBase):
     wait: float = 5
 
     @validator("parse_config")
+    @classmethod
     def _ensure_log_format_for_parsing(
         cls, value: pathlib.Path, values: Dict[str, Any]
     ) -> pathlib.Path:
@@ -85,13 +86,13 @@ def _generate_log_format_regex(log_format: str) -> Tuple[List[Union[str, Any]], 
     # Split by <header> instances
     sliced = re.split(r"(<[^<>]+>)", log_format)
     pre_regex = ""
-    for slice in sliced:
-        if "<" not in slice:
-            new_slice = re.sub(" +", "\\\\s+", slice)
+    for _slice in sliced:
+        if "<" not in _slice:
+            new_slice = re.sub(" +", "\\\\s+", _slice)
             pre_regex += new_slice
         else:
             # Get the header name from between the angled brackets
-            header = slice.strip("<").strip(">")
+            header = _slice.strip("<").strip(">")
             headers.append(header)
             # Create a named group within the new regex
             pre_regex += f"(?P<{header}>.*?)"
@@ -111,7 +112,7 @@ async def collect(*, config: LogCollectConfig) -> AsyncIterator[CollectedEvent]:
             headers, format_regex = _generate_log_format_regex(config.log_format)
 
         if parsing:
-            log.info(f"Logs collector will be parsing using config at {config.parse_config}")
+            log.info("Logs collector will be parsing using config at %s", config.parse_config)
 
             # Initialize the TemplateMiner
             drain3_config = TemplateMinerConfig()
@@ -120,12 +121,12 @@ async def collect(*, config: LogCollectConfig) -> AsyncIterator[CollectedEvent]:
         else:
             log.info("Logs collector will NOT be parsing")
 
-        with config.path.open(mode="r") as fp:
+        with config.path.open(mode="r") as rfh:
             # If we do not need to gather older logs, we put the cursor at the end of file
             if not config.backfill:
-                fp.seek(0, os.SEEK_END)
+                rfh.seek(0, os.SEEK_END)
             while True:
-                line = fp.readline().strip()
+                line = rfh.readline().strip()
                 if not line:
                     await asyncio.sleep(config.wait)
                 else:
@@ -154,4 +155,4 @@ async def collect(*, config: LogCollectConfig) -> AsyncIterator[CollectedEvent]:
                     yield event
 
     except FileNotFoundError as exc:
-        log.debug(f"File {exc.filename} not found")
+        log.debug("File %s not found", exc.filename)

@@ -73,11 +73,11 @@ def validate_shannon_assumptions() -> None:
     test_string = list("0123456789abcdef0123456789abcdef0352")
     shannon_values = []
 
-    for i in range(len(test_string)):
+    for i in range(len(test_string)):  # pylint: disable=consider-using-enumerate
         test_string[i] = "0"
         shannon_values.append(_calculate_normalized_shannon_index("".join(test_string), alphabet))
 
-    for i in range(len(shannon_values) - 1):
+    for i in range(len(shannon_values) - 1):  # pylint: disable=consider-using-enumerate
         assert shannon_values[i] >= shannon_values[i + 1]
 
     assert shannon_values[0] == 1
