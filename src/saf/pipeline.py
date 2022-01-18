@@ -42,14 +42,14 @@ class Pipeline:
             except asyncio.CancelledError:
                 log.info("Pipeline %r canceled", self.name)
                 break
-            except Exception as exc:
+            except Exception as exc:  # pylint: disable=broad-except
                 log.error(
                     "Restarting pipeline %s due to an error: %s", self.name, exc, exc_info=True
                 )
 
     async def _run(self) -> None:
         collect_plugin = self.collect_config.loaded_plugin
-        async for event in collect_plugin.collect(config=self.collect_config):  # type: ignore[attr-defined]
+        async for event in collect_plugin.collect(config=self.collect_config):
             # Process the event
             for process_config in self.process_configs:
                 # We pass copies of the event so that, in case an exception occurs while
@@ -59,7 +59,7 @@ class Pipeline:
                 original_event = event.copy()
                 process_plugin = process_config.loaded_plugin
                 try:
-                    event = await process_plugin.process(  # type: ignore[attr-defined]
+                    event = await process_plugin.process(
                         config=process_config,
                         event=event,
                     )
@@ -73,7 +73,7 @@ class Pipeline:
             for forward_config in self.forward_configs:
                 forward_plugin = forward_config.loaded_plugin
                 try:
-                    await forward_plugin.forward(  # type: ignore[attr-defined]
+                    await forward_plugin.forward(
                         config=forward_config,
                         event=event.copy(),
                     )
