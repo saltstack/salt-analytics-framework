@@ -96,12 +96,6 @@ def _install_requirements(
                 "--progress-bar=off", COVERAGE_VERSION_REQUIREMENT, silent=PIP_INSTALL_SILENT
             )
 
-        if install_salt:
-            session.install("--progress-bar=off", SALT_REQUIREMENT, silent=PIP_INSTALL_SILENT)
-
-        if install_test_requirements:
-            install_extras.append("tests")
-
         if EXTRA_REQUIREMENTS_INSTALL:
             session.log(
                 "Installing the following extra requirements because the "
@@ -112,6 +106,12 @@ def _install_requirements(
             install_command = ["--progress-bar=off"]
             install_command += [req.strip() for req in EXTRA_REQUIREMENTS_INSTALL.split()]
             session.install(*install_command, silent=PIP_INSTALL_SILENT)
+
+        if install_salt:
+            session.install("--progress-bar=off", SALT_REQUIREMENT, silent=PIP_INSTALL_SILENT)
+
+        if install_test_requirements:
+            install_extras.append("tests")
 
         if passed_requirements:
             session.install("--progress-bar=off", *passed_requirements, silent=PIP_INSTALL_SILENT)
