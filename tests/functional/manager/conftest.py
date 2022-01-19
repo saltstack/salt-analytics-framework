@@ -4,6 +4,7 @@
 import asyncio
 
 import pytest
+import pytest_asyncio
 
 from saf.manager import Manager
 from saf.models import AnalyticsConfig
@@ -15,7 +16,7 @@ async def _run_manager(manager):
     except asyncio.CancelledError:
         pass
     finally:
-        await manager.await_closed()
+        await manager.await_stopped()
 
 
 @pytest.fixture
@@ -51,7 +52,7 @@ def analytics_config(analytics_config_dict):
     return AnalyticsConfig.parse_obj(analytics_config_dict)
 
 
-@pytest.fixture
+@pytest_asyncio.fixture
 async def manager(analytics_config):
     _manager = Manager(analytics_config)
     loop = asyncio.get_event_loop()
@@ -61,3 +62,4 @@ async def manager(analytics_config):
     finally:
         if not task.done():
             task.cancel()
+        await task
