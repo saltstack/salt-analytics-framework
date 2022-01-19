@@ -60,6 +60,15 @@ class PluginConfigMixin(NonMutableConfig):
 
     plugin: str
 
+    _name: str = PrivateAttr()
+
+    @property
+    def name(self) -> str:
+        """
+        Return the plugin name as defined in the configuration file.
+        """
+        return self._name
+
     @property
     def loaded_plugin(self) -> ModuleType:
         """
@@ -197,6 +206,16 @@ class PipelineConfig(NonMutableConfig):
     process: List[str] = Field(default_factory=list)
     forward: List[str]
     enabled: bool = True
+    concurrent_forwarders: bool = True
+
+    _name: str = PrivateAttr()
+
+    @property
+    def name(self) -> str:
+        """
+        Return the pipeline name as defined in the configuration file.
+        """
+        return self._name
 
 
 class AnalyticsConfig(BaseModel):
@@ -239,7 +258,8 @@ class AnalyticsConfig(BaseModel):
         for entry in (self.collectors, self.processors, self.forwarders, self.pipelines):
             if entry is None:
                 continue
-            for config in entry.values():  # type: ignore[attr-defined]
+            for name, config in entry.items():  # type: ignore[attr-defined]
+                config._name = name  # pylint: disable=protected-access
                 config._parent = self  # pylint: disable=protected-access
 
 
