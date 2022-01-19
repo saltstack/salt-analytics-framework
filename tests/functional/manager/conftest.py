@@ -9,6 +9,14 @@ import pytest_asyncio
 from saf.manager import Manager
 from saf.models import AnalyticsConfig
 
+try:
+    asyncio_fixture = pytest_asyncio.fixture
+except AttributeError:
+    # On Py3.6 and older version of the pytest gets installed which does not
+    # have the `.fixture` function.
+    # Fallback to `pytest.fixture`.
+    asyncio_fixture = pytest.fixture
+
 
 async def _run_manager(manager):
     try:
@@ -52,7 +60,7 @@ def analytics_config(analytics_config_dict):
     return AnalyticsConfig.parse_obj(analytics_config_dict)
 
 
-@pytest_asyncio.fixture
+@asyncio_fixture
 async def manager(analytics_config):
     _manager = Manager(analytics_config)
     loop = asyncio.get_event_loop()
