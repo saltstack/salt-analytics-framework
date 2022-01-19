@@ -194,7 +194,7 @@ class PipelineConfig(NonMutableConfig):
     """
 
     collect: str
-    process: List[str]
+    process: List[str] = Field(default_factory=list)
     forward: List[str]
     enabled: bool = True
 
@@ -205,7 +205,7 @@ class AnalyticsConfig(BaseModel):
     """
 
     collectors: Dict[str, CollectConfigBase]
-    processors: Dict[str, ProcessConfigBase]
+    processors: Dict[str, ProcessConfigBase] = Field(default_factory=dict)
     forwarders: Dict[str, ForwardConfigBase]
     pipelines: Dict[str, PipelineConfig]
     salt_config: Dict[str, Any]
@@ -237,6 +237,8 @@ class AnalyticsConfig(BaseModel):
         super()._init_private_attributes()
         # Allow plugin configurations to access the full configuration, this instance
         for entry in (self.collectors, self.processors, self.forwarders, self.pipelines):
+            if entry is None:
+                continue
             for config in entry.values():  # type: ignore[attr-defined]
                 config._parent = self  # pylint: disable=protected-access
 
