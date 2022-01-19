@@ -5,9 +5,11 @@ Salt Analytics Framework Pipeline.
 """
 import asyncio
 import logging
+from types import ModuleType
 from typing import List
 
 from saf.models import CollectConfigBase
+from saf.models import CollectedEvent
 from saf.models import ForwardConfigBase
 from saf.models import PipelineConfig
 from saf.models import ProcessConfigBase
@@ -70,17 +72,31 @@ class Pipeline:
                     # Restore the original event
                     event = original_event
             # Forward the event
+            coros = []
             for forward_config in self.forward_configs:
                 forward_plugin = forward_config.loaded_plugin
-                try:
-                    await forward_plugin.forward(
-                        config=forward_config,
-                        event=event.copy(),
-                    )
-                except Exception as exc:  # pylint: disable=broad-except
-                    log.error(
-                        "An exception occurred while forwarding the event through config %r: %s",
+                coros.append(
+                    self._wrap_forwarder_plugin_call(
+                        forward_plugin,
                         forward_config,
-                        exc,
-                        exc_info=True,
-                    )
+                        event.copy(),
+                    ),
+                )
+            if self.config.concurrent_forwarders:
+                await asyncio.gather(*coros)
+            else:
+                for coro in coros:
+                    await coro
+
+    async def _wrap_forwarder_plugin_call(
+        self, plugin: ModuleType, config: ForwardConfigBase, event: CollectedEvent
+    ) -> None:
+        try:
+            await plugin.forward(config=config, event=event)
+        except Exception as exc:  # pylint: disable=broad-except
+            log.error(
+                "An exception occurred while forwarding the event through config %r: %s",
+                config,
+                exc,
+                exc_info=True,
+            )
