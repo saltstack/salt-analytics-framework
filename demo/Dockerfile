@@ -1,9 +1,9 @@
-FROM centos:8
+FROM quay.io/centos/centos:stream8
 
 RUN yum update -y
 RUN rpm --import https://repo.saltproject.io/py3/redhat/8/x86_64/latest/SALTSTACK-GPG-KEY.pub
 RUN curl -fsSL https://repo.saltproject.io/py3/redhat/8/x86_64/latest.repo | tee /etc/yum.repos.d/salt.repo
-RUN yum install -y salt-master salt-minion tmux vim bash-completion openssh-server
+RUN yum install -y salt-master salt-minion tmux vim bash-completion openssh-server tree
 
 # Set Locale
 ENV LANG=en_US.UTF-8
@@ -29,9 +29,14 @@ COPY demo/tmux-salt.yml /root/tmux-salt.yml
 COPY demo/master-base.conf /etc/salt/master.d/master.conf
 COPY demo/minion-base.conf /etc/salt/minion.d/minion.conf
 COPY demo/analytics-*.conf /etc/salt/
+COPY demo/radio/*.conf /etc/salt/radio/
+COPY demo/data-remove-extension/src/saltext/ /etc/data-remove-extension/src/saltext/
+COPY demo/data-remove-extension/setup.cfg /etc/data-remove-extension/
 RUN mkdir /src
 COPY dist/*.whl /src
 RUN python3 -m pip install /src/*.whl
 RUN rm -rf /src
+RUN mkdir /extension
+COPY demo/data-remove-extension/dist/*.whl /extension
 
 CMD ["/usr/local/bin/tmuxp", "load", "/root/tmux-salt.yml"]
