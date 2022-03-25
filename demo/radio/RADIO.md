@@ -5,11 +5,13 @@
 ### Build the Python Wheels
 
 From the repository root, run the following commands:
+NOTE: You may need to run the first ``python setup.py bdist_wheel`` command twice :(
 
 ```shell
-python setup.py bdist_wheel
+python3 -m pip install wheel
+python3 setup.py bdist_wheel
 cd demo/data-remove-extension
-python setup.py bdist_wheel
+python3 setup.py bdist_wheel
 cd -
 ```
 
@@ -100,9 +102,9 @@ Switch to window 2 and see the events being dumped, and highlight the parsing an
 
 ### Showcase Extensibility
 
-Take note of the ``data`` field that is being dumped with the logs collector.
-Let's say we only want the parsing results, and we want to remove the field from the event.
-Currently there is no built in way to do this, but we can easily write an extension using ``create-salt-extension`` from the pip-installable ``salt-extension``
+Take note of the ``drain_result`` field that is being dumped with the logs collector.
+Let's say we only want raw log results, and we want to remove the field ``drain_result`` from the event.
+Currently there is no built-in way to do this, but we can easily write an extension using ``create-salt-extension`` from the pip-installable ``salt-extension``
 
 First, let's stop the minion for now like we did before.
 Then, we can show the file contents of the extension by
@@ -161,13 +163,7 @@ After it installs, let's restart the minion.
 salt-minion -l debug
 ```
 
-Fail an ``ssh`` attempt into the container from another terminal with password ``wrong``.
-
-```shell
-ssh root@(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' analytics-demo)
-```
-
-Switch back to window 2 in the container to see that the data field is no longer being dumped.
+Switch back to window 2 in the container to see that the ``drain_result`` field is no longer being dumped during backfill.
 
 ### A Salt Managed Process
 
