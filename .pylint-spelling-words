@@ -51,6 +51,7 @@ lru
 lsof
 macos
 metric's
+mtime
 namespace
 netbsd
 noop
@@ -72,6 +73,7 @@ rst
 rtype
 saf
 schemas
+sdist
 sid
 sids
 sitecustomize
