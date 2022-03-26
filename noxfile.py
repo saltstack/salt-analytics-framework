@@ -160,6 +160,7 @@ def tests(session):
         "--show-capture=no",
         f"--junitxml={JUNIT_REPORT}",
         "--showlocals",
+        "--strict-config",
         "--strict-markers",
         "-ra",
         "-s",
