@@ -5,11 +5,10 @@
 ### Build the Python Wheels
 
 From the repository root, run the following commands:
-NOTE: You may need to run the first ``python setup.py bdist_wheel`` command twice :(
 
 ```shell
 python3 -m pip install wheel
-python3 setup.py bdist_wheel
+nox -e build
 cd demo/data-remove-extension
 python3 setup.py bdist_wheel
 cd -
