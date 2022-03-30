@@ -3,7 +3,7 @@ FROM quay.io/centos/centos:stream8
 RUN yum update -y
 RUN rpm --import https://repo.saltproject.io/py3/redhat/8/x86_64/latest/SALTSTACK-GPG-KEY.pub
 RUN curl -fsSL https://repo.saltproject.io/py3/redhat/8/x86_64/latest.repo | tee /etc/yum.repos.d/salt.repo
-RUN yum install -y salt-master salt-minion tmux vim bash-completion openssh-server tree
+RUN yum install -y salt-master salt-minion tmux vim bash-completion openssh-server tree python36
 
 # Set Locale
 ENV LANG=en_US.UTF-8
