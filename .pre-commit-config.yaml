@@ -140,7 +140,7 @@ repos:
     rev: '4.0.1'
     hooks:
       - id: flake8
-        exclude: ^(src/saf/version\.py|\.pre-commit-hooks/.*\.py)$
+        exclude: ^(demo/.*|src/saf/version\.py|\.pre-commit-hooks/.*\.py)$
         additional_dependencies:
         - flake8-mypy-fork
         - flake8-docstrings
