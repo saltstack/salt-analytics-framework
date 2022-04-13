@@ -1,3 +1,6 @@
+# Copyright 2022 VMware, Inc.
+# SPDX-License-Identifier: Apache-2.0
+#
 import subprocess
 import sys
 from enum import IntEnum
@@ -40,7 +43,7 @@ for kind in docs_by_kind:
 """
         )
 
-    header_text = "execution" if kind.lower() == "modules" else kind.rstrip('s') + " modules"
+    header_text = "execution" if kind.lower() == "modules" else kind.rstrip("s") + " modules"
     header = f"{'_'*len(header_text)}\n{header_text.title()}\n{'_'*len(header_text)}"
 
     all_rst.write_text(

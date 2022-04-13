@@ -1,3 +1,6 @@
+# Copyright 2022 VMware, Inc.
+# SPDX-License-Identifier: Apache-2.0
+#
 # pylint: disable=missing-module-docstring,import-error,protected-access,missing-function-docstring
 import datetime
 import json
@@ -6,7 +9,6 @@ import pathlib
 import shutil
 import sys
 import tempfile
-
 from pathlib import Path
 
 import nox
@@ -208,7 +210,9 @@ def tests(session):
             "--include=tests/*",
         )
         try:
-            session.run("coverage", "report", "--show-missing", "--include=src/saltext/data_remove/*")
+            session.run(
+                "coverage", "report", "--show-missing", "--include=src/saltext/data_remove/*"
+            )
             # If you also want to display the code coverage report on the CLI
             # for the tests, comment the call above and uncomment the line below
             # session.run(
