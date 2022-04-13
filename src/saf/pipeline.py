@@ -8,6 +8,8 @@ import logging
 from types import ModuleType
 from typing import List
 
+import backoff
+
 from saf.models import CollectConfigBase
 from saf.models import CollectedEvent
 from saf.models import ForwardConfigBase
@@ -46,9 +48,14 @@ class Pipeline:
                 break
             except Exception as exc:  # pylint: disable=broad-except
                 log.error(
-                    "Restarting pipeline %s due to an error: %s", self.name, exc, exc_info=True
+                    "Failed to start the pipeline %s due to an error: %s",
+                    self.name,
+                    exc,
+                    exc_info=True,
                 )
+                break
 
+    @backoff.on_exception(backoff.expo, Exception, jitter=backoff.full_jitter, max_tries=5)  # type: ignore[misc]
     async def _run(self) -> None:
         collect_plugin = self.collect_config.loaded_plugin
         async for event in collect_plugin.collect(config=self.collect_config):
