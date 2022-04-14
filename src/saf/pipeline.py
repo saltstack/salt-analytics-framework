@@ -19,6 +19,12 @@ from saf.models import ProcessConfigBase
 log = logging.getLogger(__name__)
 
 
+def _check_backoff_exception(exc: Exception) -> bool:
+    if isinstance(exc, asyncio.CancelledError):
+        return True
+    return False
+
+
 class Pipeline:
     """
     Salt Analytics Pipeline.
@@ -55,7 +61,13 @@ class Pipeline:
                 )
                 break
 
-    @backoff.on_exception(backoff.expo, Exception, jitter=backoff.full_jitter, max_tries=5)
+    @backoff.on_exception(
+        backoff.expo,
+        Exception,
+        jitter=backoff.full_jitter,
+        max_tries=5,
+        giveup=_check_backoff_exception,
+    )
     async def _run(self) -> None:
         collect_plugin = self.collect_config.loaded_plugin
         async for event in collect_plugin.collect(config=self.collect_config):
