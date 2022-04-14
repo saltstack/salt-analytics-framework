@@ -9,6 +9,7 @@ import logging
 from typing import Type
 
 from saf.models import CollectedEvent
+from saf.models import PipelineRunContext
 from saf.models import ProcessConfigBase
 
 
@@ -24,7 +25,7 @@ def get_config_schema() -> Type[ProcessConfigBase]:
 
 async def process(  # pylint: disable=unused-argument
     *,
-    config: ProcessConfigBase,
+    ctx: PipelineRunContext[ProcessConfigBase],
     event: CollectedEvent,
 ) -> CollectedEvent:
     """

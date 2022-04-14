@@ -19,6 +19,7 @@ from pydantic import validator
 
 from saf.models import CollectConfigBase
 from saf.models import CollectedEvent
+from saf.models import PipelineRunContext
 from saf.models import SaltEvent
 from saf.utils import eventbus
 
@@ -68,14 +69,15 @@ def get_config_schema() -> Type[BeaconsConfig]:
     return BeaconsConfig
 
 
-async def collect(*, config: BeaconsConfig) -> AsyncIterator[BeaconCollectedEvent]:
+async def collect(*, ctx: PipelineRunContext[BeaconsConfig]) -> AsyncIterator[BeaconCollectedEvent]:
     """
     Method called to collect events.
     """
+    config = ctx.config
     salt_event: SaltEvent
     tags = {f"salt/beacon/*/{beacon}/*" for beacon in config.beacons}
     log.info("The beacons collect plugin is configured to listen to tags: %s", tags)
-    async for salt_event in eventbus.iter_events(opts=config.parent.salt_config.copy(), tags=tags):
+    async for salt_event in eventbus.iter_events(opts=ctx.salt_config.copy(), tags=tags):
         yield BeaconCollectedEvent(
             beacon=salt_event.raw_data["beacon_name"],
             tag=salt_event.tag,

@@ -17,6 +17,7 @@ from typing import Type
 
 from saf.models import CollectedEvent
 from saf.models import ForwardConfigBase
+from saf.models import PipelineRunContext
 
 
 log = logging.getLogger(__name__)
@@ -42,12 +43,13 @@ def get_config_schema() -> Type[TestForwardConfig]:
 
 async def forward(
     *,
-    config: TestForwardConfig,
+    ctx: PipelineRunContext[TestForwardConfig],
     event: CollectedEvent,
 ) -> None:
     """
     Method called to forward the event.
     """
+    config = ctx.config
     log.info("Forwarding using %s: %s", config.name, event)
     assert event
     if config.sleep > 0:

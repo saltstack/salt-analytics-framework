@@ -6,6 +6,8 @@ Salt Analytics Framework Pipeline.
 import asyncio
 import logging
 from types import ModuleType
+from typing import Any
+from typing import Dict
 from typing import List
 
 import backoff
@@ -14,6 +16,7 @@ from saf.models import CollectConfigBase
 from saf.models import CollectedEvent
 from saf.models import ForwardConfigBase
 from saf.models import PipelineConfig
+from saf.models import PipelineRunContext
 from saf.models import ProcessConfigBase
 
 log = logging.getLogger(__name__)
@@ -69,53 +72,77 @@ class Pipeline:
         giveup=_check_backoff_exception,
     )
     async def _run(self) -> None:
-        collect_plugin = self.collect_config.loaded_plugin
-        async for event in collect_plugin.collect(config=self.collect_config):
-            # Process the event
-            for process_config in self.process_configs:
-                # We pass copies of the event so that, in case an exception occurs while
-                # the event is being processed, and the event has already been modified,
-                # the next processor to run will get an unmodified copy of the event, not
-                # the partially processed event
-                original_event = event.copy()
-                process_plugin = process_config.loaded_plugin
-                try:
-                    event = await process_plugin.process(
-                        config=process_config,
-                        event=event,
+        shared_cache: Dict[str, Any] = {}
+        process_ctxs: Dict[str, PipelineRunContext[ProcessConfigBase]] = {}
+        forward_ctxs: Dict[str, PipelineRunContext[ForwardConfigBase]] = {}
+        collect_ctx: PipelineRunContext[CollectConfigBase] = PipelineRunContext.construct(
+            config=self.collect_config,
+            shared_cache=shared_cache,
+        )
+        try:
+            collect_plugin = self.collect_config.loaded_plugin
+            async for event in collect_plugin.collect(ctx=collect_ctx):
+                # Process the event
+                for process_config in self.process_configs:
+                    if process_config.name not in process_ctxs:
+                        process_ctxs[process_config.name] = PipelineRunContext.construct(
+                            config=process_config,
+                            shared_cache=shared_cache,
+                        )
+                    # We pass copies of the event so that, in case an exception occurs while
+                    # the event is being processed, and the event has already been modified,
+                    # the next processor to run will get an unmodified copy of the event, not
+                    # the partially processed event
+                    original_event = event.copy()
+                    process_plugin = process_config.loaded_plugin
+                    try:
+                        event = await process_plugin.process(
+                            ctx=process_ctxs[process_config.name],
+                            event=event,
+                        )
+                    except Exception as exc:  # pylint: disable=broad-except
+                        log.error(
+                            "An exception occurred while processing the event: %s",
+                            exc,
+                            exc_info=True,
+                        )
+                        # Restore the original event
+                        event = original_event
+                # Forward the event
+                coros = []
+                for forward_config in self.forward_configs:
+                    if forward_config.name not in forward_ctxs:
+                        forward_ctxs[forward_config.name] = PipelineRunContext.construct(
+                            config=forward_config,
+                            shared_cache=shared_cache,
+                        )
+                    forward_plugin = forward_config.loaded_plugin
+                    coros.append(
+                        self._wrap_forwarder_plugin_call(
+                            forward_plugin,
+                            forward_ctxs[forward_config.name],
+                            event.copy(),
+                        ),
                     )
-                except Exception as exc:  # pylint: disable=broad-except
-                    log.error(
-                        "An exception occurred while processing the event: %s", exc, exc_info=True
-                    )
-                    # Restore the original event
-                    event = original_event
-            # Forward the event
-            coros = []
-            for forward_config in self.forward_configs:
-                forward_plugin = forward_config.loaded_plugin
-                coros.append(
-                    self._wrap_forwarder_plugin_call(
-                        forward_plugin,
-                        forward_config,
-                        event.copy(),
-                    ),
-                )
-            if self.config.concurrent_forwarders:
-                await asyncio.gather(*coros)
-            else:
-                for coro in coros:
-                    await coro
+                if self.config.concurrent_forwarders:
+                    await asyncio.gather(*coros)
+                else:
+                    for coro in coros:
+                        await coro
+        finally:
+            shared_cache.clear()
+            process_ctxs.clear()
+            forward_ctxs.clear()
 
     async def _wrap_forwarder_plugin_call(
-        self, plugin: ModuleType, config: ForwardConfigBase, event: CollectedEvent
+        self, plugin: ModuleType, ctx: PipelineRunContext[ForwardConfigBase], event: CollectedEvent
     ) -> None:
         try:
-            await plugin.forward(config=config, event=event)
+            await plugin.forward(ctx=ctx, event=event)
         except Exception as exc:  # pylint: disable=broad-except
             log.error(
                 "An exception occurred while forwarding the event through config %r: %s",
-                config,
+                ctx.config,
                 exc,
                 exc_info=True,
             )
