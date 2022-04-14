@@ -8,17 +8,21 @@ from datetime import datetime
 from types import ModuleType
 from typing import Any
 from typing import Dict
+from typing import Generic
 from typing import List
 from typing import Optional
+from typing import TypeVar
 from typing import Union
 
 from pydantic import BaseModel
 from pydantic import Field
 from pydantic import PrivateAttr
 from pydantic import validator
+from pydantic.generics import GenericModel
 
 from saf.plugins import PluginsList
 from saf.utils import dt
+
 
 log = logging.getLogger(__name__)
 
@@ -298,3 +302,31 @@ class SaltEvent(NonMutableModel):
         if isinstance(value, datetime):
             return value
         return SaltEvent._convert_stamp(value)
+
+
+PipelineRunContextConfigType = TypeVar("PipelineRunContextConfigType", bound=NonMutableConfig)
+
+
+class PipelineRunContext(GenericModel, Generic[PipelineRunContextConfigType]):
+    """
+    Class representing a pipeline run context.
+    """
+
+    config: PipelineRunContextConfigType
+    cache: Dict[str, Any] = Field(default_factory=dict)
+    shared_cache: Dict[str, Any] = Field(default_factory=dict)
+
+    @property
+    def pipeline_config(self) -> AnalyticsConfig:
+        """
+        Return the analytics configuration.
+        """
+        return self.config.parent
+
+    @property
+    def salt_config(self) -> Dict[str, Any]:
+        """
+        Return the salt configuration.
+        """
+        config: Dict[str, Any] = self.config.parent.salt_config
+        return config

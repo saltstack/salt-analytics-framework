@@ -15,6 +15,7 @@ from typing import Type
 from pydantic import Field
 
 from saf.models import CollectedEvent
+from saf.models import PipelineRunContext
 from saf.models import ProcessConfigBase
 
 
@@ -86,12 +87,13 @@ def _regex_process(obj: Any, config: RegexMaskProcessConfig) -> Any:
 
 async def process(  # pylint: disable=unused-argument
     *,
-    config: RegexMaskProcessConfig,
+    ctx: PipelineRunContext[RegexMaskProcessConfig],
     event: CollectedEvent,
 ) -> CollectedEvent:
     """
     Method called to mask the data based on provided regex rules.
     """
+    config = ctx.config
     log.info("Processing event in regex_mask: %s", event.json())
     event_dict = event.dict()
     processed_event_dict = _regex_process(event_dict, config)

@@ -25,6 +25,7 @@ from pydantic.main import BaseModel
 
 from saf.models import CollectConfigBase
 from saf.models import CollectedEvent
+from saf.models import PipelineRunContext
 
 
 log = logging.getLogger(__name__)
@@ -101,10 +102,11 @@ def _generate_log_format_regex(log_format: str) -> Tuple[List[Union[str, Any]], 
     return headers, regex
 
 
-async def collect(*, config: LogCollectConfig) -> AsyncIterator[CollectedEvent]:
+async def collect(*, ctx: PipelineRunContext[LogCollectConfig]) -> AsyncIterator[CollectedEvent]:
     """
     Method called to collect log events.
     """
+    config = ctx.config
     try:
         parsing = True if config.parse_config else False
 

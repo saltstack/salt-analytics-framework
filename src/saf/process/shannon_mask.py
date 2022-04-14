@@ -13,6 +13,7 @@ from typing import Type
 from pydantic import Field
 
 from saf.models import CollectedEvent
+from saf.models import PipelineRunContext
 from saf.models import ProcessConfigBase
 
 
@@ -116,12 +117,13 @@ def _shannon_process(obj: Any, config: ShannonMaskProcessConfig) -> Any:
 
 async def process(  # pylint: disable=unused-argument
     *,
-    config: ShannonMaskProcessConfig,
+    ctx: PipelineRunContext[ShannonMaskProcessConfig],
     event: CollectedEvent,
 ) -> CollectedEvent:
     """
     Method called to mask the data based on normalized Shannon index values.
     """
+    config = ctx.config
     log.info("Processing event in shannon_mask: %s", event.json())
     event_dict = event.dict()
     processed_event_dict = _shannon_process(event_dict, config)

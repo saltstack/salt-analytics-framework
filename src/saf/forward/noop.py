@@ -10,6 +10,7 @@ from typing import Type
 
 from saf.models import CollectedEvent
 from saf.models import ForwardConfigBase
+from saf.models import PipelineRunContext
 
 
 log = logging.getLogger(__name__)
@@ -24,7 +25,7 @@ def get_config_schema() -> Type[ForwardConfigBase]:
 
 async def forward(  # pylint: disable=unused-argument
     *,
-    config: ForwardConfigBase,
+    ctx: PipelineRunContext[ForwardConfigBase],
     event: CollectedEvent,
 ) -> None:
     """

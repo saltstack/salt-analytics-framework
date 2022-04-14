@@ -15,6 +15,7 @@ import salt.loader
 
 from saf.models import CollectConfigBase
 from saf.models import CollectedEvent
+from saf.models import PipelineRunContext
 
 
 log = logging.getLogger(__name__)
@@ -38,10 +39,11 @@ def get_config_schema() -> Type[SaltExecConfig]:
     return SaltExecConfig
 
 
-async def collect(*, config: SaltExecConfig) -> AsyncIterator[CollectedEvent]:
+async def collect(*, ctx: PipelineRunContext[SaltExecConfig]) -> AsyncIterator[CollectedEvent]:
     """
     Method called to collect events.
     """
+    config = ctx.config
     # Load salt functions and pick out the desired one
     loaded_funcs = salt.loader.minion_mods(config.parent.salt_config)
     loaded_fn = loaded_funcs[config.fn]

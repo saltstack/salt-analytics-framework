@@ -12,6 +12,7 @@ from typing import Type
 
 from saf.models import CollectConfigBase
 from saf.models import CollectedEvent
+from saf.models import PipelineRunContext
 
 
 log = logging.getLogger(__name__)
@@ -32,10 +33,11 @@ def get_config_schema() -> Type[NoopConfig]:
     return NoopConfig
 
 
-async def collect(*, config: NoopConfig) -> AsyncIterator[CollectedEvent]:
+async def collect(*, ctx: PipelineRunContext[NoopConfig]) -> AsyncIterator[CollectedEvent]:
     """
     Method called to collect events.
     """
+    config = ctx.config
     ticks = 0
     while True:
         ticks += 1

@@ -12,6 +12,7 @@ from typing import Type
 
 from saf.models import CollectedEvent
 from saf.models import ForwardConfigBase
+from saf.models import PipelineRunContext
 
 log = logging.getLogger(__name__)
 
@@ -35,13 +36,14 @@ def get_config_schema() -> Type[DiskConfig]:
 
 async def forward(
     *,
-    config: DiskConfig,
+    ctx: PipelineRunContext[DiskConfig],
     event: CollectedEvent,
 ) -> None:
     """
     Method called to forward the event.
     """
     indent: Optional[int] = None
+    config = ctx.config
     if config.pretty_print:
         indent = 2
     if not config.path.exists():

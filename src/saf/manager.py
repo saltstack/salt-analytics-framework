@@ -24,7 +24,7 @@ class Manager:
 
     def __init__(self, config: AnalyticsConfig):
         self.config = config
-        self.pipelines = {}
+        self.pipelines: Dict[str, Pipeline] = {}
         for name, pipeline_config in config.pipelines.items():
             self.pipelines[name] = Pipeline(name, pipeline_config)
         self.pipeline_tasks: Dict[str, Task] = {}  # type: ignore[type-arg]
