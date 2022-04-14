@@ -55,7 +55,7 @@ class Pipeline:
                 )
                 break
 
-    @backoff.on_exception(backoff.expo, Exception, jitter=backoff.full_jitter, max_tries=5)  # type: ignore[misc]
+    @backoff.on_exception(backoff.expo, Exception, jitter=backoff.full_jitter, max_tries=5)
     async def _run(self) -> None:
         collect_plugin = self.collect_config.loaded_plugin
         async for event in collect_plugin.collect(config=self.collect_config):
