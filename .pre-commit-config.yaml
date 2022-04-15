@@ -82,9 +82,9 @@ repos:
     rev: v2.32.0
     hooks:
       - id: pyupgrade
-        name: Rewrite Code to be Py3.6+
+        name: Rewrite Code to be Py3.7+
         args: [
-          --py36-plus
+          --py37-plus
         ]
         files: ^((setup|noxfile)|(src|tests)/.*)\.py$
         exclude: src/saf/version.py
@@ -94,7 +94,7 @@ repos:
     hooks:
       - id: reorder-python-imports
         args: [
-          --py3-plus,
+          --py37-plus,
           --application-directories=.:src,
         ]
         exclude: src/saf/version.py

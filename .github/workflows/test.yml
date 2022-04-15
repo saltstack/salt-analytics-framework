@@ -37,7 +37,7 @@ jobs:
     - name: Set up Python 3.6 For Nox
       uses: actions/setup-python@v2
       with:
-        python-version: 3.6
+        python-version: 3.7
 
     - name: Install Nox
       run: |
@@ -96,7 +96,6 @@ jobs:
       max-parallel: 4
       matrix:
         python-version:
-          - 3.6
           - 3.7
           - 3.8
           - 3.9

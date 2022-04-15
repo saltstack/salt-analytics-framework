@@ -43,11 +43,6 @@ pre-commit:
 #    - set -ex
 #    - cicd/upload-code-coverage.sh
 
-linux-3.6:
-  extends: .test-suite
-  image:
-    name: registry.gitlab.com/saltstack/open/cicd/containers/py:3.6
-
 linux-3.7:
   extends: .test-suite
   image:
