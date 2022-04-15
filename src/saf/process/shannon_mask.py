@@ -3,6 +3,8 @@
 """
 Mask data based using a length-relative normalized version of the Shannon Index as an indicator of entropy.
 """
+from __future__ import annotations
+
 import logging
 import math
 import string

@@ -1,6 +1,8 @@
 # Copyright 2021-2022 VMware, Inc.
 # SPDX-License-Identifier: Apache-2.0
 #
+from __future__ import annotations
+
 import pytest
 from saltfactories.daemons.master import SaltMaster
 from saltfactories.daemons.minion import SaltMinion

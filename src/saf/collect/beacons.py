@@ -6,6 +6,8 @@ The beacons collect plugin exists as an implementation example.
 It listens to Salt's event bus for beacon events and generates
 analytics events based off of those.
 """
+from __future__ import annotations
+
 import logging
 from datetime import datetime
 from typing import Any

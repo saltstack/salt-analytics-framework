@@ -2,6 +2,8 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 # pylint: disable=protected-access
+from __future__ import annotations
+
 import datetime
 import gzip
 import json

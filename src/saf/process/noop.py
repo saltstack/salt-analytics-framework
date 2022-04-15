@@ -5,6 +5,8 @@ The NOOP process plugins exists as an implementation example.
 
 It doesn't really do anything to the collected event
 """
+from __future__ import annotations
+
 import logging
 from typing import Type
 

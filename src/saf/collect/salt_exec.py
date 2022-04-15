@@ -3,6 +3,8 @@
 """
 A collect plugin that simply collects the output of a salt execution module.
 """
+from __future__ import annotations
+
 import asyncio
 import logging
 from typing import Any

@@ -1,9 +1,10 @@
 # Copyright 2021-2022 VMware, Inc.
 # SPDX-License-Identifier: Apache-2.0
 #
+from __future__ import annotations
+
 import asyncio
 from typing import Any
-from typing import Dict
 from typing import TYPE_CHECKING
 
 import pytest
@@ -38,7 +39,7 @@ async def _run_manager(manager):
 
 
 @pytest.fixture
-def analytics_config(analytics_config_dict: Dict[str, Any]):
+def analytics_config(analytics_config_dict: dict[str, Any]):
     return AnalyticsConfig.parse_obj(analytics_config_dict)
 
 

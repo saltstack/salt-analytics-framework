@@ -1,9 +1,10 @@
 # Copyright 2021-2022 VMware, Inc.
 # SPDX-License-Identifier: Apache-2.0
 #
+from __future__ import annotations
+
 import copy
 from typing import Any
-from typing import Dict
 
 import pytest
 
@@ -21,7 +22,7 @@ class SubclassedCollectedEvent(CollectedEvent):
 
 
 @pytest.fixture
-def base_rules() -> Dict[str, Any]:
+def base_rules() -> dict[str, Any]:
     # No, this is not a good regex for real IP matching
     rules = {
         "SECRET": "KEY::[0-9]{10}",
@@ -31,7 +32,7 @@ def base_rules() -> Dict[str, Any]:
 
 
 @pytest.fixture
-def data() -> Dict[str, Any]:
+def data() -> dict[str, Any]:
     data = {
         "secret_key": "This is my secret key KEY::1234567890. Nice.",
         "nothing": "",
@@ -44,7 +45,7 @@ def data() -> Dict[str, Any]:
 
 
 @pytest.fixture
-def sub_data() -> Dict[str, Any]:
+def sub_data() -> dict[str, Any]:
     sub_data = {
         "ip_address": "My IP is 127.0.0.1",
         "integer": 12,
@@ -53,7 +54,7 @@ def sub_data() -> Dict[str, Any]:
 
 
 def test__regex_process(
-    base_rules: Dict[str, Any], data: Dict[str, Any], sub_data: Dict[str, Any]
+    base_rules: dict[str, Any], data: dict[str, Any], sub_data: dict[str, Any]
 ) -> None:
     """
     Make sure it catches and replaces correctly with the mask_str.
@@ -79,7 +80,7 @@ def test__regex_process(
 
 
 def test__regex_process_with_mask_char(
-    base_rules: Dict[str, Any], data: Dict[str, Any], sub_data: Dict[str, Any]
+    base_rules: dict[str, Any], data: dict[str, Any], sub_data: dict[str, Any]
 ) -> None:
     """
     Make sure it catches and replaces correctly with the mask_char.

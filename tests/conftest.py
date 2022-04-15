@@ -1,9 +1,10 @@
 # Copyright 2021-2022 VMware, Inc.
 # SPDX-License-Identifier: Apache-2.0
 #
+from __future__ import annotations
+
 import os
 from typing import Any
-from typing import Dict
 
 import pytest
 
@@ -11,7 +12,7 @@ from saf import PACKAGE_ROOT
 
 
 @pytest.fixture(scope="session")
-def salt_factories_config() -> Dict[str, Any]:
+def salt_factories_config() -> dict[str, Any]:
     """
     Return a dictionary with the keyword arguments for FactoriesManager.
     """

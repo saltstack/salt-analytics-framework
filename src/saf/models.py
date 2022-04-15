@@ -3,6 +3,8 @@
 """
 Salt Analytics Framework Models.
 """
+from __future__ import annotations
+
 import logging
 from datetime import datetime
 from types import ModuleType
@@ -42,10 +44,10 @@ class NonMutableConfig(BaseModel):
     Base class for non-mutable configurations.
     """
 
-    _parent: "AnalyticsConfig" = PrivateAttr()
+    _parent: AnalyticsConfig = PrivateAttr()
 
     @property
-    def parent(self) -> "AnalyticsConfig":
+    def parent(self) -> AnalyticsConfig:
         """
         Return the parent configuration schema.
         """
@@ -90,7 +92,7 @@ class CollectConfigBase(PluginConfigMixin):
         cls,
         plugin: str,
         **kwargs: Dict[str, Any],
-    ) -> "CollectConfigBase":
+    ) -> CollectConfigBase:
         """
         Swap the ``cls`` to instantiate if necessary.
 
@@ -130,7 +132,7 @@ class ProcessConfigBase(PluginConfigMixin):
         cls,
         plugin: str,
         **kwargs: Dict[str, Any],
-    ) -> "ProcessConfigBase":
+    ) -> ProcessConfigBase:
         """
         Swap the ``cls`` to instantiate if necessary.
 
@@ -170,7 +172,7 @@ class ForwardConfigBase(PluginConfigMixin):
         cls,
         plugin: str,
         **kwargs: Dict[str, Any],
-    ) -> "ForwardConfigBase":
+    ) -> ForwardConfigBase:
         """
         Swap the ``cls`` to instantiate if necessary.
 

@@ -3,11 +3,12 @@
 """
 Salt Analytics Framework Plugins Support.
 """
+from __future__ import annotations
+
 import contextlib
 import logging
 import pathlib
 import types
-from typing import Dict
 from typing import Generator
 
 from salt.utils import entrypoints
@@ -26,9 +27,9 @@ class PluginsList:
     _instance = None
 
     def __init__(self) -> None:
-        self.collectors: Dict[str, types.ModuleType] = {}
-        self.processors: Dict[str, types.ModuleType] = {}
-        self.forwarders: Dict[str, types.ModuleType] = {}
+        self.collectors: dict[str, types.ModuleType] = {}
+        self.processors: dict[str, types.ModuleType] = {}
+        self.forwarders: dict[str, types.ModuleType] = {}
         self.load_plugins()
 
     def __repr__(self) -> str:
@@ -41,7 +42,7 @@ class PluginsList:
         )
 
     @staticmethod
-    def instance() -> "PluginsList":
+    def instance() -> PluginsList:
         """
         Return the cached instance of the plugins listing.
 

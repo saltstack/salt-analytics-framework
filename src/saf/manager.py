@@ -3,11 +3,11 @@
 """
 Salt Analytics Framework Pipelines Manager.
 """
+from __future__ import annotations
+
 import asyncio
 import logging
 from asyncio import Task
-from typing import Dict
-from typing import Optional
 
 import aiorun
 
@@ -24,10 +24,10 @@ class Manager:
 
     def __init__(self, config: AnalyticsConfig):
         self.config = config
-        self.pipelines: Dict[str, Pipeline] = {}
+        self.pipelines: dict[str, Pipeline] = {}
         for name, pipeline_config in config.pipelines.items():
             self.pipelines[name] = Pipeline(name, pipeline_config)
-        self.pipeline_tasks: Dict[str, Task] = {}  # type: ignore[type-arg]
+        self.pipeline_tasks: dict[str, Task] = {}  # type: ignore[type-arg]
         self.loop = asyncio.get_event_loop()
 
     async def run(self) -> None:
@@ -68,7 +68,7 @@ class Manager:
             if result is not None:
                 log.warning(result)
 
-    async def start_pipeline(self, name: str) -> Optional[str]:
+    async def start_pipeline(self, name: str) -> str | None:
         """
         Start a pipeline by name.
         """
@@ -83,7 +83,7 @@ class Manager:
         self.pipeline_tasks[name] = self.loop.create_task(pipeline.run())
         return None
 
-    async def stop_pipeline(self, name: str) -> Optional[str]:
+    async def stop_pipeline(self, name: str) -> str | None:
         """
         Stop a pipeline by name.
         """

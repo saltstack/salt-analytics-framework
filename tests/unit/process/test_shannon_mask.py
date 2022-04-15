@@ -1,9 +1,10 @@
 # Copyright 2021-2022 VMware, Inc.
 # SPDX-License-Identifier: Apache-2.0
 #
+from __future__ import annotations
+
 import copy
 from typing import Any
-from typing import Dict
 
 import pytest
 
@@ -22,7 +23,7 @@ class SubclassedCollectedEvent(CollectedEvent):
 
 
 @pytest.fixture
-def data() -> Dict[str, Any]:
+def data() -> dict[str, Any]:
     data = {
         "high_hex_entropy": "I'm gonna make him an 000123456789abcdef0123456789abcdefdab he can't refuse.",
         "nothing": "",
@@ -32,7 +33,7 @@ def data() -> Dict[str, Any]:
 
 
 @pytest.fixture
-def sub_data() -> Dict[str, Any]:
+def sub_data() -> dict[str, Any]:
     sub_data = {
         "ip_address": "My IP is 127.0.0.1",
         "integer": 12,
@@ -84,7 +85,7 @@ def validate_shannon_assumptions() -> None:
     assert shannon_values[-1] == 0
 
 
-def test__shannon_process(data: Dict[str, Any], sub_data: Dict[str, Any]) -> None:
+def test__shannon_process(data: dict[str, Any], sub_data: dict[str, Any]) -> None:
     """
     Make sure it catches and replaces correctly with the mask_str.
     """
@@ -113,7 +114,7 @@ def test__shannon_process(data: Dict[str, Any], sub_data: Dict[str, Any]) -> Non
     assert masked_event.new_field.data == expected.new_field.data
 
 
-def test__shannon_process_with_mask_char(data: Dict[str, Any], sub_data: Dict[str, Any]) -> None:
+def test__shannon_process_with_mask_char(data: dict[str, Any], sub_data: dict[str, Any]) -> None:
     """
     Make sure it catches and replaces correctly with the mask_char.
     """

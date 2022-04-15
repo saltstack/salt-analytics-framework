@@ -78,6 +78,23 @@ repos:
         files: ^tests/.*\.py$
         args: [--silent, -E, fix_docstrings]
 
+  - repo: https://github.com/asottile/reorder_python_imports
+    rev: v3.0.1
+    hooks:
+      - id: reorder-python-imports
+        args: [
+          --py37-plus,
+          --application-directories=.:src,
+          --add-import=from __future__ import annotations
+        ]
+        exclude: (?x)^(
+          demo/.*
+          |
+          .pre-commit-hooks/.*
+          |
+          src/saf/version
+          )\.py$
+
   - repo: https://github.com/asottile/pyupgrade
     rev: v2.32.0
     hooks:
@@ -87,17 +104,59 @@ repos:
           --py37-plus
         ]
         files: ^((setup|noxfile)|(src|tests)/.*)\.py$
-        exclude: src/saf/version.py
+        exclude: (?x)^(
+            demo/.*
+            |
+            .pre-commit-hooks/.*
+            |
+            src/saf/(
+              version
+              |
+              models
+              |
+              (
+                collect
+                |
+                process
+                |
+                forward
+              )/.*
+            )
+          )\.py
 
-  - repo: https://github.com/asottile/reorder_python_imports
-    rev: v3.0.1
+  - repo: https://github.com/asottile/pyupgrade
+    rev: v2.32.0
     hooks:
-      - id: reorder-python-imports
+      - id: pyupgrade
+        name: Rewrite Code to be Py3.7+ (Pydantic Models)
         args: [
           --py37-plus,
-          --application-directories=.:src,
+          --keep-runtime-typing,
         ]
-        exclude: src/saf/version.py
+        files: (?x)^(
+            src/saf/(
+              version
+              |
+              models
+              |
+              (
+                collect
+                |
+                process
+                |
+                forward
+              )/.*
+            )
+          )\.py$
+        exclude: (?x)^(
+          demo/.*
+          |
+          .pre-commit-hooks/.*
+          |
+          src/saf/version
+          |
+          tests/.*
+          )\.py$
 
   - repo: https://github.com/psf/black
     rev: 22.3.0

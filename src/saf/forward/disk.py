@@ -5,6 +5,8 @@ The disk forward plugin exists as an implementation example.
 
 It just dumps the collected events to disk
 """
+from __future__ import annotations
+
 import logging
 import pathlib
 from typing import Optional

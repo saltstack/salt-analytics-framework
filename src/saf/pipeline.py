@@ -3,12 +3,12 @@
 """
 Salt Analytics Framework Pipeline.
 """
+from __future__ import annotations
+
 import asyncio
 import logging
 from types import ModuleType
 from typing import Any
-from typing import Dict
-from typing import List
 
 import backoff
 
@@ -37,10 +37,10 @@ class Pipeline:
         self.name = name
         self.config = config
         self.collect_config: CollectConfigBase = config.parent.collectors[config.collect]
-        self.process_configs: List[ProcessConfigBase] = []
+        self.process_configs: list[ProcessConfigBase] = []
         for config_name in config.process:
             self.process_configs.append(config.parent.processors[config_name])
-        self.forward_configs: List[ForwardConfigBase] = []
+        self.forward_configs: list[ForwardConfigBase] = []
         for config_name in config.forward:
             self.forward_configs.append(config.parent.forwarders[config_name])
 
@@ -72,9 +72,9 @@ class Pipeline:
         giveup=_check_backoff_exception,
     )
     async def _run(self) -> None:
-        shared_cache: Dict[str, Any] = {}
-        process_ctxs: Dict[str, PipelineRunContext[ProcessConfigBase]] = {}
-        forward_ctxs: Dict[str, PipelineRunContext[ForwardConfigBase]] = {}
+        shared_cache: dict[str, Any] = {}
+        process_ctxs: dict[str, PipelineRunContext[ProcessConfigBase]] = {}
+        forward_ctxs: dict[str, PipelineRunContext[ForwardConfigBase]] = {}
         collect_ctx: PipelineRunContext[CollectConfigBase] = PipelineRunContext.construct(
             config=self.collect_config,
             shared_cache=shared_cache,

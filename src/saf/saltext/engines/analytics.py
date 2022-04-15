@@ -4,16 +4,14 @@
 """
 Salt engine module.
 """
+from __future__ import annotations
+
 import asyncio
 import logging
 import pathlib
 from typing import Any
 from typing import Callable
-from typing import Dict
-from typing import Optional
-from typing import Tuple
 from typing import TYPE_CHECKING
-from typing import Union
 
 import aiorun
 from salt.utils import yaml
@@ -22,8 +20,8 @@ from saf.manager import Manager
 from saf.models import AnalyticsConfig
 
 if TYPE_CHECKING:
-    __salt__: Dict[str, Callable[..., Any]]
-    __opts__: Dict[str, Any]
+    __salt__: dict[str, Callable[..., Any]]
+    __opts__: dict[str, Any]
     __salt_system_encoding__: str
 
 log = logging.getLogger(__name__)
@@ -32,7 +30,7 @@ log = logging.getLogger(__name__)
 __virtualname__ = "analytics"
 
 
-def __virtual__() -> Union[str, Tuple[bool, str]]:
+def __virtual__() -> str | tuple[bool, str]:
     """
     Return the module name, or ``(False, "Failure reason")`` to load, or not, the engine.
     """
@@ -43,11 +41,11 @@ def __virtual__() -> Union[str, Tuple[bool, str]]:
     return __virtualname__
 
 
-def get_config_dict() -> Optional[Dict[str, Any]]:
+def get_config_dict() -> dict[str, Any] | None:
     """
     Return the configuration dictionary for salt analytics.
     """
-    config_dict: Optional[Dict[str, Any]]
+    config_dict: dict[str, Any] | None
     config_dict = __salt__["config.get"]("analytics")  # pylint: disable=undefined-variable
     if not config_dict:
         config_dir = pathlib.Path(__opts__["config_dir"])  # pylint: disable=undefined-variable

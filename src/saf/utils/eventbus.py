@@ -3,6 +3,8 @@
 """
 Wrapper functions around Salt's eventbus.
 """
+from __future__ import annotations
+
 import asyncio
 import copy
 import fnmatch
@@ -10,9 +12,6 @@ import logging
 import queue
 from typing import Any
 from typing import AsyncIterator
-from typing import Dict
-from typing import Optional
-from typing import Set
 from typing import TYPE_CHECKING
 
 import salt.utils.event
@@ -25,7 +24,7 @@ if TYPE_CHECKING:
 log = logging.getLogger(__name__)
 
 
-def _construct_event(event_data: Dict[str, Any]) -> Optional[SaltEvent]:
+def _construct_event(event_data: dict[str, Any]) -> SaltEvent | None:
     """
     Construct a :py:class:`~saf.models.SaltEvent` from a salt event payload.
     """
@@ -50,9 +49,9 @@ def _construct_event(event_data: Dict[str, Any]) -> Optional[SaltEvent]:
 
 
 def _process_events(
-    opts: Dict[str, Any],
-    events_queue: "Queue[SaltEvent]",
-    tags: Set[str],
+    opts: dict[str, Any],
+    events_queue: Queue[SaltEvent],
+    tags: set[str],
 ) -> None:
     """
     Collect events from Salt's event bus.
@@ -121,9 +120,9 @@ def _process_events(
 
 async def _start_event_listener(
     *,
-    opts: Dict[str, Any],
+    opts: dict[str, Any],
     events_queue: "Queue[SaltEvent]",
-    tags: Set[str],
+    tags: set[str],
 ) -> None:
     # We don't want to mix asyncio and tornado loops,
     # so, we defer the salt event listening to a separate
@@ -138,12 +137,12 @@ async def _start_event_listener(
     )
 
 
-async def iter_events(*, tags: Set[str], opts: Dict[str, Any]) -> AsyncIterator[SaltEvent]:
+async def iter_events(*, tags: set[str], opts: dict[str, Any]) -> AsyncIterator[SaltEvent]:
     """
     Method called to collect events.
     """
     loop = asyncio.get_event_loop()
-    events_queue: "Queue[SaltEvent]" = queue.Queue()
+    events_queue: Queue[SaltEvent] = queue.Queue()
     process_events_task = loop.create_task(
         _start_event_listener(opts=opts, events_queue=events_queue, tags=tags)
     )

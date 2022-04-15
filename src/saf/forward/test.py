@@ -8,6 +8,8 @@ to test the salt-analytics-framework
 
 It doesn't really do anything to the collected event.
 """
+from __future__ import annotations
+
 import asyncio
 import json
 import logging

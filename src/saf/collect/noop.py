@@ -5,6 +5,8 @@ The NOOP collect plugin exists as an implementation example.
 
 It doesn't really do anything to the collected event
 """
+from __future__ import annotations
+
 import asyncio
 import logging
 from typing import AsyncIterator
