@@ -1,4 +1,0 @@
-Pipelines now have access to caching.
-
-* There's a cache(dictionary) shared among the whole pipeline where each of the ``collect``, ``process`` and ``forward`` executions can store and grab data from.
-* Additionally, each of ``collect``, ``process`` and ``forward`` plugins in a pipeline execution have their own caching, not shared. Could be used to store state between executions.
