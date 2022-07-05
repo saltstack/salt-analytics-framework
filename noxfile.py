@@ -564,6 +564,7 @@ def changelog(session, draft):
         install_coverage_requirements=False,
         install_test_requirements=False,
         install_source=False,
+        install_salt=False,
         install_extras=["changelog"],
     )
 
