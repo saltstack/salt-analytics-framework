@@ -574,6 +574,7 @@ def changelog(session, draft):
         "--version",
         silent=True,
         log=False,
+        stderr=None,
     ).strip()
 
     town_cmd = ["towncrier", "build", f"--version={version}"]
