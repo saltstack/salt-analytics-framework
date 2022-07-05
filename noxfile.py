@@ -690,6 +690,7 @@ def build(session):
 
         git show -s --format=%at HEAD
     """
+    shutil.rmtree("dist/", ignore_errors=True)
     if SKIP_REQUIREMENTS_INSTALL is False:
         requirements_file = REPO_ROOT / "requirements" / "build.txt"
         session.install(
