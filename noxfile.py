@@ -569,14 +569,18 @@ def changelog(session, draft):
         install_extras=["changelog"],
     )
 
-    version = session.run(
-        "python",
-        "setup.py",
-        "--version",
-        silent=True,
-        log=False,
-        stderr=None,
-    ).strip()
+    version = (
+        session.run(
+            "python",
+            "setup.py",
+            "--version",
+            silent=True,
+            log=False,
+            stderr=None,
+        )
+        .strip()
+        .split()[-1]
+    )
 
     town_cmd = ["towncrier", "build", f"--version={version}"]
     if draft:
