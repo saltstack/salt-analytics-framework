@@ -1,37 +1,3 @@
-.. image:: https://img.shields.io/github/workflow/status/saltstack/salt-analytics-framework/CI?style=plastic
-   :target: https://github.com/saltstack/salt-analytics-framework/actions/workflows/testing.yml
-   :alt: CI
-
-
-.. image:: https://readthedocs.org/projects/salt-analytics-framework/badge/?style=plastic
-   :target: https://salt-analytics-framework.readthedocs.io
-   :alt: Docs
-
-
-.. image:: https://img.shields.io/codecov/c/github/saltstack/salt-analytics-framework?style=plastic&token=CqV7t0yKTb
-   :target: https://codecov.io/gh/saltstack/salt-analytics-framework
-   :alt: Codecov
-
-
-.. image:: https://img.shields.io/pypi/pyversions/salt-analytics-framework?style=plastic
-   :target: https://pypi.org/project/salt-analytics-framework
-   :alt: Python Versions
-
-
-.. image:: https://img.shields.io/pypi/wheel/salt-analytics-framework?style=plastic
-   :target: https://pypi.org/project/salt-analytics-framework
-   :alt: Python Wheel
-
-
-.. image:: https://img.shields.io/badge/code%20style-black-000000.svg?style=plastic
-   :target: https://github.com/psf/black
-   :alt: Code Style: black
-
-
-.. image:: https://img.shields.io/pypi/l/salt-analytics-framework?style=plastic
-   :alt: PyPI - License
-
-
 ..
    include-starts-here
 
