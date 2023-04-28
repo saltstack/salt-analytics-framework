@@ -1,4 +1,4 @@
-salt>=3003
+salt>=3005
 pydantic>=1.8.2
 aiorun
 importlib_metadata; python_version < "3.8"
