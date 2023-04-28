@@ -177,7 +177,6 @@ jobs:
         SALT_REQUIREMENT: salt~=${{ matrix.salt-version }}
         EXTRA_REQUIREMENTS_INSTALL: Cython
       run: |
-        echo "/C/Program Files (x86)/Windows Kits/10/bin/10.0.18362.0/x64" >> "${GITHUB_PATH}"
         nox --force-color -e tests-3 --install-only
 
     - name: Test
@@ -186,7 +185,6 @@ jobs:
         SALT_REQUIREMENT: salt~=${{ matrix.salt-version }}
         SKIP_REQUIREMENTS_INSTALL: YES
       run: |
-        echo "/C/Program Files (x86)/Windows Kits/10/bin/10.0.18362.0/x64" >> "${GITHUB_PATH}"
         nox --force-color -e tests-3 -- -vv tests/
 
     - name: Upload Logs
