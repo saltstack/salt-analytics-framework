@@ -18,7 +18,7 @@ if TYPE_CHECKING:
     try:
         from typing import AsyncGenerator
     except ImportError:
-        from typing_extensions import AsyncGenerator
+        from typing import AsyncGenerator
 
 try:
     asyncio_fixture = pytest_asyncio.fixture
