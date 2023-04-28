@@ -52,6 +52,24 @@ repos:
         language: system
   # <---- Local Hooks ------------------------------------------------------------------------------------------------
 
+  - repo: https://github.com/s0undt3ch/python-tools-scripts
+    rev: "0.12.0"
+    hooks:
+      - id: tools
+        alias: actionlint
+        name: Lint GitHub Actions Workflows
+        files: "^.github/workflows/"
+        types:
+          - yaml
+        args:
+          - pre-commit
+          - actionlint
+        additional_dependencies:
+          - boto3==1.21.46
+          - pyyaml==6.0
+          - jinja2==3.1.2
+          - packaging==23.0
+
   # ----- Formatting ---------------------------------------------------------------------------->
   - repo: https://github.com/saltstack/pre-commit-remove-import-headers
     rev: 1.1.0
