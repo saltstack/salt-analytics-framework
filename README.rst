@@ -59,19 +59,51 @@ Configuration
 The minimal configuration to start salt analytics with `Salt`_ is to add it to Salt's engines
 configuration:
 
-.. literalinclude:: ../examples/analytics-beacons.conf
-   :language: yaml
-   :name: /etc/salt/minion
-   :lines: 1,2
+.. code-block:: yaml
+
+   engines:
+     - analytics
 
 
 Example Pipeline
 ----------------
 
-.. literalinclude:: ../examples/analytics-beacons.conf
-   :language: yaml
-   :name: /etc/salt/analytics
-   :lines: 4-
+.. code-block:: yaml
+
+   beacons:
+     memusage:
+       - interval: 5
+       - percent: 0.01%
+     status:
+       - interval: 5
+       - time:
+         - all
+       - loadavg:
+         - all
+
+   analytics:
+     collectors:
+       beacons-collector:
+         plugin: beacons
+         beacons:
+           - "*"
+
+     processors:
+       noop-processor:
+         plugin: noop
+
+     forwarders:
+       disk-forwarder:
+         plugin: disk
+         path: /var/cache/salt
+         filename: events-dumped.txt
+         pretty_print: true
+
+     pipelines:
+       my-pipeline:
+         collect: beacons-collector
+         process: noop-processor
+         forward: disk-forwarder
 
 
 Usage
