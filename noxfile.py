@@ -94,6 +94,7 @@ def _install_requirements(
     install_extras = install_extras or []
     if SKIP_REQUIREMENTS_INSTALL is False:
         # Always have the wheel package installed
+        session.install("--progress-bar=off", "setuptools>=65.6.3,<66", silent=PIP_INSTALL_SILENT)
         session.install("--progress-bar=off", "wheel", silent=PIP_INSTALL_SILENT)
         if install_coverage_requirements:
             session.install(
