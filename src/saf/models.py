@@ -35,7 +35,6 @@ class NonMutableModel(BaseModel):
     """
 
     class Config:
-
         allow_mutation = False
 
 
@@ -54,7 +53,6 @@ class NonMutableConfig(BaseModel):
         return self._parent
 
     class Config:
-
         allow_mutation = False
         underscore_attrs_are_private = True
 
