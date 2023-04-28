@@ -151,7 +151,7 @@ jobs:
       max-parallel: 3
       matrix:
         python-version:
-          - "3.7"
+          - "3.8"
         salt-version:
           - "3005.0"
           - "3006.0"
@@ -205,7 +205,7 @@ jobs:
       max-parallel: 3
       matrix:
         python-version:
-          - "3.7"
+          - "3.8"
         salt-version:
           - "3005.0"
           - "3006.0"
