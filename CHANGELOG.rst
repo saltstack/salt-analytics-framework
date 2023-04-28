@@ -14,7 +14,7 @@ Backward incompatible (breaking) changes will only be introduced in major versio
 .. towncrier release notes start
 
 
-1.0.0 (2022-07-05)
+0.0.1 (2022-07-05)
 ==================
 
 Features
