@@ -10,9 +10,9 @@ import copy
 import fnmatch
 import logging
 import queue
+from typing import TYPE_CHECKING
 from typing import Any
 from typing import AsyncIterator
-from typing import TYPE_CHECKING
 
 import salt.utils.event
 
@@ -43,12 +43,12 @@ def _construct_event(event_data: dict[str, Any]) -> SaltEvent | None:
             raw_data=event_raw_data,
         )
         log.debug("Constructed SaltEvent: %s", salt_event)
-    except Exception as exc:  # pylint: disable=broad-except
-        log.error("Failed to construct a SaltEvent: %s", exc, exc_info=True)
+    except Exception:
+        log.exception("Failed to construct a SaltEvent")
     return salt_event
 
 
-def _process_events(
+def _process_events(  # noqa: C901
     opts: dict[str, Any],
     events_queue: Queue[SaltEvent],
     tags: set[str],
@@ -98,11 +98,9 @@ def _process_events(
                                     events_queue.put_nowait(salt_event)
                                 # We found a matching tag, stop iterating tags
                                 break
-                        except Exception as exc:  # pylint: disable=broad-except
-                            log.error(
-                                "Ran into an error while processing beacon events: %s",
-                                exc,
-                                exc_info=True,
+                        except Exception:
+                            log.exception(
+                                "Ran into an error while processing beacon events",
                             )
                 # No additional processing required, process to next event from the event bus
                 continue
@@ -121,7 +119,7 @@ def _process_events(
 async def _start_event_listener(
     *,
     opts: dict[str, Any],
-    events_queue: "Queue[SaltEvent]",
+    events_queue: Queue[SaltEvent],
     tags: set[str],
 ) -> None:
     # We don't want to mix asyncio and tornado loops,

@@ -21,7 +21,6 @@ from saf.models import CollectedEvent
 from saf.models import ForwardConfigBase
 from saf.models import PipelineRunContext
 
-
 log = logging.getLogger(__name__)
 
 
@@ -53,7 +52,6 @@ async def forward(
     """
     config = ctx.config
     log.info("Forwarding using %s: %s", config.name, event)
-    assert event
     if config.sleep > 0:
         await asyncio.sleep(config.sleep)
     if config.path:

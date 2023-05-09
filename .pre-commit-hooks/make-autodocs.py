@@ -7,7 +7,6 @@ import pathlib
 import sys
 import traceback
 
-
 CODE_ROOT = pathlib.Path(__file__).resolve().parent.parent
 SRC_DIR = CODE_ROOT / "src" / "salt-analytics-framework"
 DOC_DIR = CODE_ROOT / "docs"

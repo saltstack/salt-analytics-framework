@@ -19,7 +19,6 @@ from saf.models import CollectConfigBase
 from saf.models import CollectedEvent
 from saf.models import PipelineRunContext
 
-
 log = logging.getLogger(__name__)
 
 

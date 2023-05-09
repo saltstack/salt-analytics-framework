@@ -10,11 +10,13 @@ from __future__ import annotations
 
 import logging
 from datetime import datetime
+from datetime import timezone
 from typing import Any
 from typing import AsyncIterator
 from typing import Dict
 from typing import List
 from typing import Type
+from typing import TypeVar
 from typing import Union
 
 from pydantic import validator
@@ -26,6 +28,8 @@ from saf.models import SaltEvent
 from saf.utils import eventbus
 
 log = logging.getLogger(__name__)
+
+BCE = TypeVar("BCE", bound="BeaconCollectedEvent")
 
 
 class BeaconsConfig(CollectConfigBase):
@@ -50,15 +54,15 @@ class BeaconCollectedEvent(CollectedEvent):
     def _convert_stamp(stamp: str) -> datetime:
         _stamp: datetime
         try:
-            _stamp = datetime.fromisoformat(stamp)
+            _stamp = datetime.fromisoformat(stamp).replace(tzinfo=timezone.utc)
         except AttributeError:  # pragma: no cover
             # Python < 3.7
-            _stamp = datetime.strptime(stamp, "%Y-%m-%dT%H:%M:%S.%f")
+            _stamp = datetime.strptime(stamp, "%Y-%m-%dT%H:%M:%S.%f").replace(tzinfo=timezone.utc)
         return _stamp
 
     @validator("stamp")
     @classmethod
-    def _validate_stamp(cls, value: Union[str, datetime]) -> datetime:
+    def _validate_stamp(cls: Type[BCE], value: Union[str, datetime]) -> datetime:
         if isinstance(value, datetime):
             return value
         return BeaconCollectedEvent._convert_stamp(value)

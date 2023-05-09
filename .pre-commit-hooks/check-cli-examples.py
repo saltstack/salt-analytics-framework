@@ -13,7 +13,7 @@ EXECUTION_MODULES_PATH = CODE_ROOT / "src" / " saf" / "modules"
 
 def check_cli_examples(files):
     """
-    Check that every function on every execution module provides a CLI example
+    Check that every function on every execution module provides a CLI example.
     """
     errors = 0
     for file in files:

@@ -10,6 +10,7 @@ import logging
 import pathlib
 import types
 from typing import Generator
+from typing import TypeVar
 
 from salt.utils import entrypoints
 
@@ -17,6 +18,8 @@ log = logging.getLogger(__name__)
 
 
 PACKAGE_ROOT = pathlib.Path(__file__).resolve().parent
+
+PLT = TypeVar("PLT", bound="PluginsList")
 
 
 class PluginsList:
@@ -26,13 +29,13 @@ class PluginsList:
 
     _instance = None
 
-    def __init__(self) -> None:
+    def __init__(self: PLT) -> None:
         self.collectors: dict[str, types.ModuleType] = {}
         self.processors: dict[str, types.ModuleType] = {}
         self.forwarders: dict[str, types.ModuleType] = {}
         self.load_plugins()
 
-    def __repr__(self) -> str:
+    def __repr__(self: PLT) -> str:
         """
         Return a printable representation of the class instance.
         """
@@ -52,7 +55,7 @@ class PluginsList:
             PluginsList._instance = PluginsList()
         return PluginsList._instance
 
-    def load_plugins(self) -> None:
+    def load_plugins(self: PLT) -> None:
         """
         Load the available salt analytics framework plugins.
         """
@@ -78,13 +81,11 @@ def catch_entry_points_exception(entry_point: str) -> Generator[types.SimpleName
     context = types.SimpleNamespace(exception_caught=False)
     try:
         yield context
-    except Exception as exc:  # pylint: disable=broad-except
+    except Exception:
         context.exception_caught = True
         entry_point_details = entrypoints.name_and_version_from_entry_point(entry_point)
-        log.error(  # type: ignore[call-arg]
-            "Error processing Salt Analytics Framework Plugin %s(version: %s): %s",
+        log.exception(
+            "Error processing Salt Analytics Framework Plugin %s(version: %s)",
             entry_point_details.name,
             entry_point_details.version,
-            exc,
-            exc_info_on_loglevel=logging.DEBUG,
         )

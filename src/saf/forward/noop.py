@@ -14,7 +14,6 @@ from saf.models import CollectedEvent
 from saf.models import ForwardConfigBase
 from saf.models import PipelineRunContext
 
-
 log = logging.getLogger(__name__)
 
 
@@ -25,13 +24,12 @@ def get_config_schema() -> Type[ForwardConfigBase]:
     return ForwardConfigBase
 
 
-async def forward(  # pylint: disable=unused-argument
+async def forward(
     *,
-    ctx: PipelineRunContext[ForwardConfigBase],
+    ctx: PipelineRunContext[ForwardConfigBase],  # noqa: ARG001
     event: CollectedEvent,
 ) -> None:
     """
     Method called to forward the event.
     """
     log.info("Forwarding: %s", event)
-    assert event

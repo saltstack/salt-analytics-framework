@@ -4,15 +4,14 @@
 from __future__ import annotations
 
 import asyncio
-from typing import Any
 from typing import TYPE_CHECKING
+from typing import Any
 
 import pytest
 import pytest_asyncio
 
 from saf.manager import Manager
 from saf.models import AnalyticsConfig
-
 
 if TYPE_CHECKING:
     try:
@@ -44,7 +43,7 @@ def analytics_config(analytics_config_dict: dict[str, Any]):
 
 
 @asyncio_fixture
-async def manager(analytics_config: AnalyticsConfig) -> "AsyncGenerator[Manager, None]":
+async def manager(analytics_config: AnalyticsConfig) -> AsyncGenerator[Manager, None]:
     _manager = Manager(analytics_config)
     loop = asyncio.get_event_loop()
     task = loop.create_task(_run_manager(_manager))

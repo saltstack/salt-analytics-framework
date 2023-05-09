@@ -8,13 +8,19 @@ from __future__ import annotations
 import asyncio
 import logging
 from asyncio import Task
+from typing import TYPE_CHECKING
+from typing import TypeVar
 
 import aiorun
 
-from saf.models import AnalyticsConfig
 from saf.pipeline import Pipeline
 
+if TYPE_CHECKING:
+    from saf.models import AnalyticsConfig
+
 log = logging.getLogger(__name__)
+
+MN = TypeVar("MN", bound="Manager")
 
 
 class Manager:
@@ -22,7 +28,7 @@ class Manager:
     Pipelines Manager.
     """
 
-    def __init__(self, config: AnalyticsConfig):
+    def __init__(self: MN, config: AnalyticsConfig) -> None:
         self.config = config
         self.pipelines: dict[str, Pipeline] = {}
         for name, pipeline_config in config.pipelines.items():
@@ -30,7 +36,7 @@ class Manager:
         self.pipeline_tasks: dict[str, Task] = {}  # type: ignore[type-arg]
         self.loop = asyncio.get_event_loop()
 
-    async def run(self) -> None:
+    async def run(self: MN) -> None:
         """
         Async entry point to run the pipelines.
         """
@@ -44,13 +50,13 @@ class Manager:
         finally:
             await aiorun.shutdown_waits_for(self.stop_pipelines())
 
-    async def await_stopped(self) -> None:
+    async def await_stopped(self: MN) -> None:
         """
         Wait until all pipelines have been stopped.
         """
         await self.stop_pipelines()
 
-    async def start_pipelines(self) -> None:
+    async def start_pipelines(self: MN) -> None:
         """
         Start the pipelines.
         """
@@ -59,7 +65,7 @@ class Manager:
             if result is not None:
                 log.warning(result)
 
-    async def stop_pipelines(self) -> None:
+    async def stop_pipelines(self: MN) -> None:
         """
         Stop the pipelines.
         """
@@ -68,7 +74,7 @@ class Manager:
             if result is not None:
                 log.warning(result)
 
-    async def start_pipeline(self, name: str) -> str | None:
+    async def start_pipeline(self: MN, name: str) -> str | None:
         """
         Start a pipeline by name.
         """
@@ -83,7 +89,7 @@ class Manager:
         self.pipeline_tasks[name] = self.loop.create_task(pipeline.run())
         return None
 
-    async def stop_pipeline(self, name: str) -> str | None:
+    async def stop_pipeline(self: MN, name: str) -> str | None:
         """
         Stop a pipeline by name.
         """

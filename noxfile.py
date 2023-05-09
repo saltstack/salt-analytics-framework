@@ -4,20 +4,19 @@
 # pylint: disable=protected-access
 from __future__ import annotations
 
+import contextlib
 import datetime
 import gzip
 import json
 import os
 import pathlib
 import shutil
-import sys
 import tarfile
 import tempfile
 from pathlib import Path
 
 import nox
 from nox.command import CommandFailed
-from nox.virtualenv import VirtualEnv
 
 # Nox options
 #  Reuse existing virtualenvs
@@ -66,7 +65,8 @@ def _get_session_python_version_info(session):
     except AttributeError:
         session_py_version = session.run_always(
             "python",
-            "-c" 'import sys; sys.stdout.write("{}.{}.{}".format(*sys.version_info))',
+            "-c",
+            'import sys; sys.stdout.write("{}.{}.{}".format(*sys.version_info))',
             silent=True,
             log=False,
         )
@@ -194,12 +194,9 @@ def tests(session):
         session.run("coverage", "run", "-m", "pytest", *args, env=env)
     finally:
         # Always combine and generate the XML coverage report
-        try:
+        with contextlib.suppress(CommandFailed):
             session.run("coverage", "combine")
-        except CommandFailed:
-            # Sometimes some of the coverage files are corrupt which would
-            # trigger a CommandFailed exception
-            pass
+
         # Generate report for salt code coverage
         session.run(
             "coverage",
@@ -237,7 +234,7 @@ class Tee:
     Python class to mimic linux tee behavior.
     """
 
-    def __init__(self, first, second):
+    def __init__(self, first, second) -> None:
         self._first = first
         self._second = second
 
@@ -250,160 +247,6 @@ class Tee:
 
     def fileno(self):
         return self._first.fileno()
-
-
-def _lint(session, rcfile, flags, paths, tee_output=True):
-    _install_requirements(
-        session,
-        install_salt=False,
-        install_coverage_requirements=False,
-        install_test_requirements=False,
-        install_extras=["dev", "tests"],
-    )
-
-    if tee_output:
-        session.run("pylint", "--version")
-        pylint_report_path = os.environ.get("PYLINT_REPORT")
-
-    cmd_args = ["pylint", f"--rcfile={rcfile}"] + list(flags) + list(paths)
-
-    src_path = str(REPO_ROOT / "src")
-    python_path_env_var = os.environ.get("PYTHONPATH") or None
-    if python_path_env_var is None:
-        python_path_env_var = src_path
-    else:
-        python_path_entries = python_path_env_var.split(os.pathsep)
-        if src_path in python_path_entries:
-            python_path_entries.remove(src_path)
-        python_path_entries.insert(0, src_path)
-        python_path_env_var = os.pathsep.join(python_path_entries)
-
-    env = {
-        # The updated python path so that the project is importable without installing it
-        "PYTHONPATH": python_path_env_var,
-        "PYTHONUNBUFFERED": "1",
-    }
-
-    cmd_kwargs = {"env": env}
-
-    if tee_output:
-        stdout = tempfile.TemporaryFile(mode="w+b")
-        cmd_kwargs["stdout"] = Tee(stdout, sys.__stdout__)
-
-    try:
-        session.run(*cmd_args, **cmd_kwargs)
-    finally:
-        if tee_output:
-            stdout.seek(0)
-            contents = stdout.read()
-            if contents:
-                contents = contents.decode("utf-8")
-                sys.stdout.write(contents)
-                sys.stdout.flush()
-                if pylint_report_path:
-                    # Write report
-                    with open(pylint_report_path, "w", encoding="utf-8") as wfh:
-                        wfh.write(contents)
-                    session.log("Report file written to %r", pylint_report_path)
-            stdout.close()
-
-
-def _lint_pre_commit(session, rcfile, flags, paths):
-    if "VIRTUAL_ENV" not in os.environ:
-        session.error(
-            "This should be running from within a virtualenv and "
-            "'VIRTUAL_ENV' was not found as an environment variable."
-        )
-    if "pre-commit" not in os.environ["VIRTUAL_ENV"]:
-        session.error(
-            "This should be running from within a pre-commit virtualenv and "
-            "'VIRTUAL_ENV'({}) does not appear to be a pre-commit virtualenv.".format(
-                os.environ["VIRTUAL_ENV"]
-            )
-        )
-
-    try:
-        session.run(
-            "pip",
-            "uninstall",
-            "-y",
-            "salt-analytics-framework",
-            silent=True,
-        )
-    except (CommandFailed, OSError):
-        pass
-
-    # Let's patch nox to make it run inside the pre-commit virtualenv
-    session._runner.venv = VirtualEnv(
-        os.environ["VIRTUAL_ENV"],
-        interpreter=session._runner.func.python,
-        reuse_existing=True,
-        venv=True,
-    )
-    _lint(session, rcfile, flags, paths, tee_output=False)
-
-
-@nox.session(python="3")
-def lint(session):
-    """
-    Run PyLint against the code and the test suite. Set PYLINT_REPORT to a path to capture output.
-    """
-    session.notify(f"lint-code-{session.python}")
-    session.notify(f"lint-tests-{session.python}")
-
-
-@nox.session(python="3", name="lint-code")
-def lint_code(session):
-    """
-    Run PyLint against the code. Set PYLINT_REPORT to a path to capture output.
-    """
-    flags = ["--disable=I"]
-    if session.posargs:
-        paths = session.posargs
-    else:
-        paths = ["setup.py", "noxfile.py", "src/"]
-    _lint(session, ".pylintrc", flags, paths)
-
-
-@nox.session(python="3", name="lint-tests")
-def lint_tests(session):
-    """
-    Run PyLint against the test suite. Set PYLINT_REPORT to a path to capture output.
-    """
-    flags = ["--disable=I,redefined-outer-name,no-member,unused-argument"]
-    if session.posargs:
-        paths = session.posargs
-    else:
-        paths = ["tests/"]
-    _lint(session, ".pylintrc", flags, paths)
-
-
-@nox.session(python=False, name="lint-code-pre-commit")
-def lint_code_pre_commit(session):
-    """
-    Run PyLint against the code. Set PYLINT_REPORT to a path to capture output.
-    """
-    flags = ["--disable=I"]
-    if session.posargs:
-        paths = session.posargs
-    else:
-        paths = ["setup.py", "noxfile.py", "src/"]
-    _lint_pre_commit(session, ".pylintrc", flags, paths)
-
-
-@nox.session(python=False, name="lint-tests-pre-commit")
-def lint_tests_pre_commit(session):
-    """
-    Run PyLint against the code and the test suite. Set PYLINT_REPORT to a path to capture output.
-    """
-    flags = [
-        "--disable=I,redefined-outer-name,missing-function-docstring,no-member,missing-module-docstring",
-    ]
-    if session.posargs:
-        paths = session.posargs
-    else:
-        paths = ["tests/"]
-    _lint_pre_commit(session, ".pylintrc", flags, paths)
 
 
 @nox.session(python="3")
@@ -540,10 +383,9 @@ def gen_api_docs(session):
         install_source=True,
         install_extras=["docs"],
     )
-    try:
+    with contextlib.suppress(FileNotFoundError):
         shutil.rmtree("docs/ref")
-    except FileNotFoundError:
-        pass
+
     session.run(
         "sphinx-apidoc",
         "--module-first",
@@ -632,7 +474,7 @@ class Recompress:
     Helper class to re-compress a ``.tag.gz`` file to make it reproducible.
     """
 
-    def __init__(self, mtime):
+    def __init__(self, mtime) -> None:
         self.mtime = int(mtime)
 
     def tar_reset(self, tarinfo):
@@ -659,27 +501,25 @@ class Recompress:
         d_src.mkdir()
         d_tar = tempd.joinpath(targz.stem)
         d_targz = tempd.joinpath(targz.name)
-        with tarfile.open(d_tar, "w|") as wfile:
-            with tarfile.open(targz, "r:gz") as rfile:
-                rfile.extractall(d_src)  # nosec
-                extracted_dir = next(pathlib.Path(d_src).iterdir())
-                for name in sorted(extracted_dir.rglob("*")):
-                    wfile.add(
-                        str(name),
-                        filter=self.tar_reset,
-                        recursive=False,
-                        arcname=str(name.relative_to(d_src)),
-                    )
+        with tarfile.open(d_tar, "w|") as wfile, tarfile.open(targz, "r:gz") as rfile:
+            rfile.extractall(d_src)  # nosec
+            extracted_dir = next(pathlib.Path(d_src).iterdir())
+            for name in sorted(extracted_dir.rglob("*")):
+                wfile.add(
+                    str(name),
+                    filter=self.tar_reset,
+                    recursive=False,
+                    arcname=str(name.relative_to(d_src)),
+                )
 
-        with open(d_tar, "rb") as rfh:
-            with gzip.GzipFile(
-                fileobj=open(d_targz, "wb"), mode="wb", filename="", mtime=self.mtime
-            ) as gzfile:
-                while True:
-                    chunk = rfh.read(1024)
-                    if not chunk:
-                        break
-                    gzfile.write(chunk)
+        with open(d_tar, "rb") as rfh, gzip.GzipFile(
+            fileobj=open(d_targz, "wb"), mode="wb", filename="", mtime=self.mtime
+        ) as gzfile:
+            while True:
+                chunk = rfh.read(1024)
+                if not chunk:
+                    break
+                gzfile.write(chunk)
         targz.unlink()
         shutil.move(str(d_targz), str(targz))
 
