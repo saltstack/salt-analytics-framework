@@ -13,6 +13,7 @@ from typing import Dict
 from typing import Match
 from typing import Optional
 from typing import Type
+from typing import TypeVar
 
 from pydantic import Field
 
@@ -20,8 +21,9 @@ from saf.models import CollectedEvent
 from saf.models import PipelineRunContext
 from saf.models import ProcessConfigBase
 
-
 log = logging.getLogger(__name__)
+
+RegexProcessObject = TypeVar("RegexProcessObject")
 
 
 class RegexMaskProcessConfig(ProcessConfigBase):
@@ -57,37 +59,41 @@ def _regex_mask(event_piece: str, config: RegexMaskProcessConfig) -> str:
         if config.mask_char:
             matched_str = match.group(0)
             return config.mask_char * len(matched_str)
-        else:
-            return f"{config.mask_prefix}{rule_name}{config.mask_suffix}"
+        return f"{config.mask_prefix}{rule_name}{config.mask_suffix}"
 
     orig_str = event_piece
 
     try:
         for rule_name, pattern in config.rules.items():
             event_piece = re.sub(pattern, functools.partial(repl_fn, rule_name), event_piece)
-    except Exception as exc:  # pylint: disable=broad-except
-        log.error("Failed to mask value '%s' with message %s.  Skipping.", orig_str, exc)
+    except Exception:
+        log.exception("Failed to mask value '%s'", orig_str)
 
     return event_piece
 
 
-def _regex_process(obj: Any, config: RegexMaskProcessConfig) -> Any:
+def _regex_process(
+    obj: str | list[Any] | tuple[Any, ...] | set[Any] | Dict[str, Any],
+    config: RegexMaskProcessConfig,
+) -> str | list[Any] | tuple[Any, ...] | set[Any] | Dict[str, Any]:
     """
     Recursive method to iterate over dictionary and apply rules to all str values.
     """
-    # Iterate over all attributes of obj.  If string, do mask.  If dict, set, tuple, or list -> recurse.
+    # Iterate over all attributes of obj.
+    # If string, do mask.
+    # If dict, set, tuple, or list -> recurse.
     if isinstance(obj, str):
         return _regex_mask(obj, config)
-    elif isinstance(obj, (list, tuple, set)):
+    if isinstance(obj, (list, tuple, set)):
         klass = type(obj)
         return klass(_regex_process(i, config) for i in obj)
-    elif isinstance(obj, dict):
+    if isinstance(obj, dict):
         for key, value in obj.items():
             obj[key] = _regex_process(value, config)
     return obj
 
 
-async def process(  # pylint: disable=unused-argument
+async def process(
     *,
     ctx: PipelineRunContext[RegexMaskProcessConfig],
     event: CollectedEvent,
@@ -99,5 +105,4 @@ async def process(  # pylint: disable=unused-argument
     log.info("Processing event in regex_mask: %s", event.json())
     event_dict = event.dict()
     processed_event_dict = _regex_process(event_dict, config)
-    processed_event = event.parse_obj(processed_event_dict)
-    return processed_event
+    return event.parse_obj(processed_event_dict)

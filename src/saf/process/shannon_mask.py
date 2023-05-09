@@ -18,7 +18,6 @@ from saf.models import CollectedEvent
 from saf.models import PipelineRunContext
 from saf.models import ProcessConfigBase
 
-
 log = logging.getLogger(__name__)
 
 
@@ -83,8 +82,7 @@ def _shannon_mask(event_piece: str, config: ShannonMaskProcessConfig) -> str:
         """
         if config.mask_char:
             return config.mask_char * len(word)
-        else:
-            return f"{config.mask_prefix}{config.mask_str}{config.mask_suffix}"
+        return f"{config.mask_prefix}{config.mask_str}{config.mask_suffix}"
 
     orig_str = event_piece
 
@@ -95,29 +93,29 @@ def _shannon_mask(event_piece: str, config: ShannonMaskProcessConfig) -> str:
                 h_norm = _calculate_normalized_shannon_index(word, config.alphabet)
                 if h_norm > config.h_threshold:
                     event_piece = event_piece.replace(word, repl_fn(word))
-    except Exception as exc:  # pylint: disable=broad-except
-        log.error("Failed to mask value '%s' with message %s.  Skipping.", orig_str, exc)
+    except Exception:
+        log.exception("Failed to mask value '%s'", orig_str)
 
     return event_piece
 
 
-def _shannon_process(obj: Any, config: ShannonMaskProcessConfig) -> Any:
+def _shannon_process(obj: Any, config: ShannonMaskProcessConfig) -> Any:  # noqa: ANN401
     """
     Recursive method to iterate over dictionary and apply rules to all str values.
     """
     # Iterate over all attributes of obj.  If string, do mask.  If dict, recurse.  Else, do nothing.
     if isinstance(obj, str):
         return _shannon_mask(obj, config)
-    elif isinstance(obj, (list, tuple, set)):
+    if isinstance(obj, (list, tuple, set)):
         klass = type(obj)
         return klass(_shannon_process(i, config) for i in obj)
-    elif isinstance(obj, dict):
+    if isinstance(obj, dict):
         for key, value in obj.items():
             obj[key] = _shannon_process(value, config)
     return obj
 
 
-async def process(  # pylint: disable=unused-argument
+async def process(
     *,
     ctx: PipelineRunContext[ShannonMaskProcessConfig],
     event: CollectedEvent,
@@ -129,5 +127,4 @@ async def process(  # pylint: disable=unused-argument
     log.info("Processing event in shannon_mask: %s", event.json())
     event_dict = event.dict()
     processed_event_dict = _shannon_process(event_dict, config)
-    processed_event = event.parse_obj(processed_event_dict)
-    return processed_event
+    return event.parse_obj(processed_event_dict)

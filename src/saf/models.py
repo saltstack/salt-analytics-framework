@@ -7,12 +7,14 @@ from __future__ import annotations
 
 import logging
 from datetime import datetime
-from types import ModuleType
+from datetime import timezone
+from typing import TYPE_CHECKING
 from typing import Any
 from typing import Dict
 from typing import Generic
 from typing import List
 from typing import Optional
+from typing import Type
 from typing import TypeVar
 from typing import Union
 
@@ -25,6 +27,8 @@ from pydantic.generics import GenericModel
 from saf.plugins import PluginsList
 from saf.utils import dt
 
+if TYPE_CHECKING:
+    from types import ModuleType
 
 log = logging.getLogger(__name__)
 
@@ -38,6 +42,9 @@ class NonMutableModel(BaseModel):
         allow_mutation = False
 
 
+NMC = TypeVar("NMC", bound="NonMutableConfig")
+
+
 class NonMutableConfig(BaseModel):
     """
     Base class for non-mutable configurations.
@@ -46,7 +53,7 @@ class NonMutableConfig(BaseModel):
     _parent: AnalyticsConfig = PrivateAttr()
 
     @property
-    def parent(self) -> AnalyticsConfig:
+    def parent(self: NMC) -> AnalyticsConfig:
         """
         Return the parent configuration schema.
         """
@@ -55,6 +62,9 @@ class NonMutableConfig(BaseModel):
     class Config:
         allow_mutation = False
         underscore_attrs_are_private = True
+
+
+PCMI = TypeVar("PCMI", bound="PluginConfigMixin")
 
 
 class PluginConfigMixin(NonMutableConfig):
@@ -67,18 +77,21 @@ class PluginConfigMixin(NonMutableConfig):
     _name: str = PrivateAttr()
 
     @property
-    def name(self) -> str:
+    def name(self: PCMI) -> str:
         """
         Return the plugin name as defined in the configuration file.
         """
         return self._name
 
     @property
-    def loaded_plugin(self) -> ModuleType:
+    def loaded_plugin(self: PCMI) -> ModuleType:
         """
         Return the plugin instance(module) for which this configuration refers to.
         """
         raise NotImplementedError
+
+
+CCB = TypeVar("CCB", bound="CollectConfigBase")
 
 
 class CollectConfigBase(PluginConfigMixin):
@@ -86,8 +99,8 @@ class CollectConfigBase(PluginConfigMixin):
     Base config schema for collect plugins.
     """
 
-    def __new__(  # pylint: disable=unused-argument
-        cls,
+    def __new__(
+        cls: Type[CCB],
         plugin: str,
         **kwargs: Dict[str, Any],
     ) -> CollectConfigBase:
@@ -114,11 +127,14 @@ class CollectConfigBase(PluginConfigMixin):
         return instance
 
     @property
-    def loaded_plugin(self) -> ModuleType:
+    def loaded_plugin(self: CCB) -> ModuleType:
         """
         Return the plugin instance(module) for which this configuration refers to.
         """
         return PluginsList.instance().collectors[self.plugin]
+
+
+PCB = TypeVar("PCB", bound="ProcessConfigBase")
 
 
 class ProcessConfigBase(PluginConfigMixin):
@@ -126,8 +142,8 @@ class ProcessConfigBase(PluginConfigMixin):
     Base config schema for process plugins.
     """
 
-    def __new__(  # pylint: disable=unused-argument
-        cls,
+    def __new__(
+        cls: Type[PCB],
         plugin: str,
         **kwargs: Dict[str, Any],
     ) -> ProcessConfigBase:
@@ -154,11 +170,14 @@ class ProcessConfigBase(PluginConfigMixin):
         return instance
 
     @property
-    def loaded_plugin(self) -> ModuleType:
+    def loaded_plugin(self: PCB) -> ModuleType:
         """
         Return the plugin instance(module) for which this configuration refers to.
         """
         return PluginsList.instance().processors[self.plugin]
+
+
+FCB = TypeVar("FCB", bound="ForwardConfigBase")
 
 
 class ForwardConfigBase(PluginConfigMixin):
@@ -166,8 +185,8 @@ class ForwardConfigBase(PluginConfigMixin):
     Base config schema for forward plugins.
     """
 
-    def __new__(  # pylint: disable=unused-argument
-        cls,
+    def __new__(
+        cls: Type[FCB],
         plugin: str,
         **kwargs: Dict[str, Any],
     ) -> ForwardConfigBase:
@@ -194,11 +213,14 @@ class ForwardConfigBase(PluginConfigMixin):
         return instance
 
     @property
-    def loaded_plugin(self) -> ModuleType:
+    def loaded_plugin(self: FCB) -> ModuleType:
         """
         Return the plugin instance(module) for which this configuration refers to.
         """
         return PluginsList.instance().forwarders[self.plugin]
+
+
+PC = TypeVar("PC", bound="PipelineConfig")
 
 
 class PipelineConfig(NonMutableConfig):
@@ -215,11 +237,14 @@ class PipelineConfig(NonMutableConfig):
     _name: str = PrivateAttr()
 
     @property
-    def name(self) -> str:
+    def name(self: PC) -> str:
         """
         Return the pipeline name as defined in the configuration file.
         """
         return self._name
+
+
+AC = TypeVar("AC", bound="AnalyticsConfig")
 
 
 class AnalyticsConfig(BaseModel):
@@ -235,7 +260,9 @@ class AnalyticsConfig(BaseModel):
 
     @validator("pipelines", pre=True)
     @classmethod
-    def _validate_pipelines(cls, pipelines: Dict[str, Dict[str, Any]]) -> Dict[str, Dict[str, Any]]:
+    def _validate_pipelines(
+        cls: Type[AC], pipelines: Dict[str, Dict[str, Any]]
+    ) -> Dict[str, Dict[str, Any]]:
         for name, data in pipelines.items():
             collect = data["collect"]
             process = data.get("process")
@@ -253,7 +280,7 @@ class AnalyticsConfig(BaseModel):
             pipelines[name].setdefault("enabled", True)
         return pipelines
 
-    def _init_private_attributes(self) -> None:
+    def _init_private_attributes(self: AC) -> None:
         """
         Set the `_parent` attribute on child schemas.
         """
@@ -276,6 +303,9 @@ class CollectedEvent(BaseModel):
     timestamp: Optional[datetime] = Field(default_factory=dt.utcnow)
 
 
+SE = TypeVar("SE", bound="SaltEvent")
+
+
 class SaltEvent(NonMutableModel):
     """
     Class representing an event from Salt's event bus.
@@ -290,15 +320,15 @@ class SaltEvent(NonMutableModel):
     def _convert_stamp(stamp: str) -> datetime:
         _stamp: datetime
         try:
-            _stamp = datetime.fromisoformat(stamp)
+            _stamp = datetime.fromisoformat(stamp).replace(tzinfo=timezone.utc)
         except AttributeError:  # pragma: no cover
             # Python < 3.7
-            _stamp = datetime.strptime(stamp, "%Y-%m-%dT%H:%M:%S.%f")
+            _stamp = datetime.strptime(stamp, "%Y-%m-%dT%H:%M:%S.%f").replace(tzinfo=timezone.utc)
         return _stamp
 
     @validator("stamp")
     @classmethod
-    def _validate_stamp(cls, value: Union[str, datetime]) -> datetime:
+    def _validate_stamp(cls: Type[SE], value: Union[str, datetime]) -> datetime:
         if isinstance(value, datetime):
             return value
         return SaltEvent._convert_stamp(value)
@@ -317,14 +347,14 @@ class PipelineRunContext(GenericModel, Generic[PipelineRunContextConfigType]):
     shared_cache: Dict[str, Any] = Field(default_factory=dict)
 
     @property
-    def pipeline_config(self) -> AnalyticsConfig:
+    def pipeline_config(self) -> AnalyticsConfig:  # noqa: ANN101
         """
         Return the analytics configuration.
         """
         return self.config.parent
 
     @property
-    def salt_config(self) -> Dict[str, Any]:
+    def salt_config(self) -> Dict[str, Any]:  # noqa: ANN101
         """
         Return the salt configuration.
         """

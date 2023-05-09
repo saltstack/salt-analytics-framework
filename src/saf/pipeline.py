@@ -7,8 +7,9 @@ from __future__ import annotations
 
 import asyncio
 import logging
-from types import ModuleType
+from typing import TYPE_CHECKING
 from typing import Any
+from typing import TypeVar
 
 import backoff
 
@@ -19,6 +20,9 @@ from saf.models import PipelineConfig
 from saf.models import PipelineRunContext
 from saf.models import ProcessConfigBase
 
+if TYPE_CHECKING:
+    from types import ModuleType
+
 log = logging.getLogger(__name__)
 
 
@@ -28,12 +32,15 @@ def _check_backoff_exception(exc: Exception) -> bool:
     return False
 
 
+P = TypeVar("P", bound="Pipeline")
+
+
 class Pipeline:
     """
     Salt Analytics Pipeline.
     """
 
-    def __init__(self, name: str, config: PipelineConfig):
+    def __init__(self: P, name: str, config: PipelineConfig) -> None:
         self.name = name
         self.config = config
         self.collect_config: CollectConfigBase = config.parent.collectors[config.collect]
@@ -44,7 +51,7 @@ class Pipeline:
         for config_name in config.forward:
             self.forward_configs.append(config.parent.forwarders[config_name])
 
-    async def run(self) -> None:
+    async def run(self: P) -> None:
         """
         Run the pipeline.
         """
@@ -55,12 +62,10 @@ class Pipeline:
             except asyncio.CancelledError:
                 log.info("Pipeline %r canceled", self.name)
                 break
-            except Exception as exc:  # pylint: disable=broad-except
-                log.error(
-                    "Failed to start the pipeline %s due to an error: %s",
+            except Exception:
+                log.exception(
+                    "Failed to start the pipeline %s due to an error",
                     self.name,
-                    exc,
-                    exc_info=True,
                 )
                 break
 
@@ -71,7 +76,7 @@ class Pipeline:
         max_tries=5,
         giveup=_check_backoff_exception,
     )
-    async def _run(self) -> None:
+    async def _run(self: P) -> None:
         shared_cache: dict[str, Any] = {}
         process_ctxs: dict[str, PipelineRunContext[ProcessConfigBase]] = {}
         forward_ctxs: dict[str, PipelineRunContext[ForwardConfigBase]] = {}
@@ -96,18 +101,16 @@ class Pipeline:
                     original_event = event.copy()
                     process_plugin = process_config.loaded_plugin
                     try:
-                        event = await process_plugin.process(
+                        event = await process_plugin.process(  # noqa: PLW2901
                             ctx=process_ctxs[process_config.name],
                             event=event,
                         )
-                    except Exception as exc:  # pylint: disable=broad-except
-                        log.error(
-                            "An exception occurred while processing the event: %s",
-                            exc,
-                            exc_info=True,
+                    except Exception:
+                        log.exception(
+                            "An exception occurred while processing the event",
                         )
                         # Restore the original event
-                        event = original_event
+                        event = original_event  # noqa: PLW2901
                 # Forward the event
                 coros = []
                 for forward_config in self.forward_configs:
@@ -135,14 +138,15 @@ class Pipeline:
             forward_ctxs.clear()
 
     async def _wrap_forwarder_plugin_call(
-        self, plugin: ModuleType, ctx: PipelineRunContext[ForwardConfigBase], event: CollectedEvent
+        self: P,
+        plugin: ModuleType,
+        ctx: PipelineRunContext[ForwardConfigBase],
+        event: CollectedEvent,
     ) -> None:
         try:
             await plugin.forward(ctx=ctx, event=event)
-        except Exception as exc:  # pylint: disable=broad-except
-            log.error(
-                "An exception occurred while forwarding the event through config %r: %s",
+        except Exception:
+            log.exception(
+                "An exception occurred while forwarding the event through config %r",
                 ctx.config,
-                exc,
-                exc_info=True,
             )

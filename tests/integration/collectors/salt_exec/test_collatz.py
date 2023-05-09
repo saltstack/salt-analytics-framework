@@ -12,7 +12,6 @@ import pytest
 
 from saf.models import CollectedEvent
 
-
 log = logging.getLogger(__name__)
 
 

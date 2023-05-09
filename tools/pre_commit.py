@@ -9,8 +9,8 @@ from __future__ import annotations
 import logging
 import shutil
 
-from ptscripts import command_group
 from ptscripts import Context
+from ptscripts import command_group
 
 log = logging.getLogger(__name__)
 

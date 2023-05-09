@@ -14,7 +14,6 @@ from saf.models import CollectedEvent
 from saf.models import PipelineRunContext
 from saf.models import ProcessConfigBase
 
-
 log = logging.getLogger(__name__)
 
 
@@ -25,9 +24,9 @@ def get_config_schema() -> Type[ProcessConfigBase]:
     return ProcessConfigBase
 
 
-async def process(  # pylint: disable=unused-argument
+async def process(
     *,
-    ctx: PipelineRunContext[ProcessConfigBase],
+    ctx: PipelineRunContext[ProcessConfigBase],  # noqa: ARG001
     event: CollectedEvent,
 ) -> CollectedEvent:
     """

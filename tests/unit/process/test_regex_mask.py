@@ -9,8 +9,8 @@ from typing import Any
 import pytest
 
 from saf.models import CollectedEvent
-from saf.process.regex_mask import _regex_process
 from saf.process.regex_mask import RegexMaskProcessConfig
+from saf.process.regex_mask import _regex_process
 
 
 class SubclassedCollectedEvent(CollectedEvent):

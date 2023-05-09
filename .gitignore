@@ -136,3 +136,6 @@ src/saf/version.py
 
 # Ignore CI generated artifacts
 artifacts/
+
+# Ignore neovim backup files
+*~

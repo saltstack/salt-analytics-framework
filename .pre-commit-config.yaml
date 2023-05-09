@@ -71,110 +71,13 @@ repos:
           - packaging==23.0
 
   # ----- Formatting ---------------------------------------------------------------------------->
-  - repo: https://github.com/saltstack/pre-commit-remove-import-headers
-    rev: 1.1.0
+  - repo: https://github.com/charliermarsh/ruff-pre-commit
+    rev: "v0.0.265"
     hooks:
-      - id: remove-import-headers
-
-  - repo: https://github.com/s0undt3ch/salt-rewrite
-    # Automatically rewrite code with known rules
-    rev: 2.0.0
-    hooks:
-      - id: salt-rewrite
-        alias: rewrite-docstrings
-        name: Salt extensions docstrings auto-fixes
-        files: ^src/saf/.*\.py$
-        args: [--silent]
-
-  - repo: https://github.com/s0undt3ch/salt-rewrite
-    # Automatically rewrite code with known rules
-    rev: 2.0.0
-    hooks:
-      - id: salt-rewrite
-        alias: rewrite-tests
-        name: Rewrite the test suite
-        files: ^tests/.*\.py$
-        args: [--silent, -E, fix_docstrings]
-
-  - repo: https://github.com/asottile/reorder_python_imports
-    rev: v3.9.0
-    hooks:
-      - id: reorder-python-imports
-        args: [
-          --py37-plus,
-          --application-directories=.:src,
-          --add-import=from __future__ import annotations
-        ]
-        exclude: (?x)^(
-          demo/.*
-          |
-          .pre-commit-hooks/.*
-          |
-          src/saf/version
-          )\.py$
-
-  - repo: https://github.com/asottile/pyupgrade
-    rev: v3.3.2
-    hooks:
-      - id: pyupgrade
-        name: Rewrite Code to be Py3.7+
-        args: [
-          --py37-plus
-        ]
-        files: ^((setup|noxfile)|(src|tests)/.*)\.py$
-        exclude: (?x)^(
-            demo/.*
-            |
-            .pre-commit-hooks/.*
-            |
-            src/saf/(
-              version
-              |
-              models
-              |
-              (
-                collect
-                |
-                process
-                |
-                forward
-              )/.*
-            )
-          )\.py
-
-  - repo: https://github.com/asottile/pyupgrade
-    rev: v3.3.2
-    hooks:
-      - id: pyupgrade
-        name: Rewrite Code to be Py3.7+ (Pydantic Models)
-        args: [
-          --py37-plus,
-          --keep-runtime-typing,
-        ]
-        files: (?x)^(
-            src/saf/(
-              version
-              |
-              models
-              |
-              (
-                collect
-                |
-                process
-                |
-                forward
-              )/.*
-            )
-          )\.py$
-        exclude: (?x)^(
-          demo/.*
-          |
-          .pre-commit-hooks/.*
-          |
-          src/saf/version
-          |
-          tests/.*
-          )\.py$
+      - id: ruff
+        args:
+          - --fix
+        exclude: (.pre-commit-hooks/.*|docs/.*)\.py
 
   - repo: https://github.com/psf/black
     rev: 23.3.0
@@ -193,37 +96,7 @@ repos:
           - black==23.3.0
   # <---- Formatting -----------------------------------------------------------------------------
 
-  # ----- Security ------------------------------------------------------------------------------>
-  - repo: https://github.com/PyCQA/bandit
-    rev: "1.7.5"
-    hooks:
-      - id: bandit
-        alias: bandit-salt
-        name: Run bandit against the code base
-        args: [--silent, -lll, --skip, B701]
-        files: ^(?!tests/).*\.py$
-        exclude: src/saf/version.py
-  - repo: https://github.com/PyCQA/bandit
-    rev: "1.7.5"
-    hooks:
-      - id: bandit
-        alias: bandit-tests
-        name: Run bandit against the test suite
-        args: [--silent, -lll, --skip, B701]
-        files: ^tests/.*
-  # <---- Security -------------------------------------------------------------------------------
-
   # ----- Code Analysis ------------------------------------------------------------------------->
-  - repo: https://github.com/pycqa/flake8
-    rev: '6.0.0'
-    hooks:
-      - id: flake8
-        exclude: ^(demo/.*|src/saf/version\.py|\.pre-commit-hooks/.*\.py)$
-        additional_dependencies:
-        - flake8-mypy-fork
-        - flake8-docstrings
-        - flake8-typing-imports
-
   - repo: https://github.com/pre-commit/mirrors-mypy
     rev: v1.2.0
     hooks:

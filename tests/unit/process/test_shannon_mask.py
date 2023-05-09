@@ -9,9 +9,9 @@ from typing import Any
 import pytest
 
 from saf.models import CollectedEvent
+from saf.process.shannon_mask import ShannonMaskProcessConfig
 from saf.process.shannon_mask import _calculate_normalized_shannon_index
 from saf.process.shannon_mask import _shannon_process
-from saf.process.shannon_mask import ShannonMaskProcessConfig
 
 
 class SubclassedCollectedEvent(CollectedEvent):

@@ -9,9 +9,9 @@ from __future__ import annotations
 import asyncio
 import logging
 import pathlib
+from typing import TYPE_CHECKING
 from typing import Any
 from typing import Callable
-from typing import TYPE_CHECKING
 
 import aiorun
 from salt.utils import yaml

@@ -18,6 +18,7 @@ from typing import Optional
 from typing import Pattern
 from typing import Tuple
 from typing import Type
+from typing import TypeVar
 from typing import Union
 
 from drain3 import TemplateMiner
@@ -29,8 +30,10 @@ from saf.models import CollectConfigBase
 from saf.models import CollectedEvent
 from saf.models import PipelineRunContext
 
-
 log = logging.getLogger(__name__)
+
+
+LCC = TypeVar("LCC", bound="LogCollectConfig")
 
 
 class LogCollectConfig(CollectConfigBase):
@@ -47,10 +50,11 @@ class LogCollectConfig(CollectConfigBase):
     @validator("parse_config")
     @classmethod
     def _ensure_log_format_for_parsing(
-        cls, value: pathlib.Path, values: Dict[str, Any]
+        cls: Type[LCC], value: pathlib.Path, values: Dict[str, Any]
     ) -> pathlib.Path:
         if value and not values["log_format"]:
-            raise ValueError("Parsing without specifying a log_format is not allowed!")
+            msg = "Parsing without specifying a log_format is not allowed!"
+            raise ValueError(msg)
         return value
 
 
@@ -110,7 +114,7 @@ async def collect(*, ctx: PipelineRunContext[LogCollectConfig]) -> AsyncIterator
     """
     config = ctx.config
     try:
-        parsing = True if config.parse_config else False
+        parsing = bool(config.parse_config)
 
         if config.log_format:
             headers, format_regex = _generate_log_format_regex(config.log_format)
