@@ -14,7 +14,8 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  Pre-Commit:
+  pre-commit:
+    name: Pre-Commit
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
@@ -38,7 +39,8 @@ jobs:
         pre-commit run --show-diff-on-failure --color=always --all-files
 
 
-  Docs:
+  docs:
+    name: Docs
     runs-on: ubuntu-latest
     needs: Pre-Commit
 
@@ -68,7 +70,8 @@ jobs:
         nox --force-color -e docs
 
 
-  Linux:
+  linux:
+    name: Linux
     runs-on: ubuntu-latest
     needs: Pre-Commit
 
@@ -121,7 +124,8 @@ jobs:
         path: artifacts/runtests-*.log
 
 
-#  Windows:
+#  windows:
+#    name: Windows
 #    runs-on: windows-latest
 #    needs: Pre-Commit
 #
@@ -174,7 +178,8 @@ jobs:
 #        name: runtests-${{ runner.os }}-${{ matrix.python-version }}-salt-${{ matrix.salt-version }}.logg
 #        path: artifacts/runtests-*.log
 
-  macOS:
+  macos:
+    name: MacOS
     runs-on: macOS-latest
     needs: Pre-Commit
 
@@ -222,13 +227,14 @@ jobs:
         name: runtests-${{ runner.os }}-${{ matrix.python-version }}-salt-${{ matrix.salt-version }}.log
         path: artifacts/runtests-*.log
 
-  Build:
+  build:
+    name: Build Package
     runs-on: ubuntu-latest
     needs:
-      - Docs
-      - Linux
-#      - Windows
-      - macOS
+      - docs
+      - linux
+#      - windows
+      - macos
     steps:
     - uses: actions/checkout@v3
       with:
@@ -244,11 +250,40 @@ jobs:
       run: |
         nox -e build
 
-#    - name: Publish distribution 📦 to Test PyPI
-#      if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags')
-#      uses: pypa/gh-action-pypi-publish@release/v1
-#      with:
-#        user: __token__
-#        password: ${{ secrets.TEST_PYPI_TOKEN }}
-#        repository_url: https://test.pypi.org/legacy/
-#        print_hash: true
+    - name: Upload Built Wheel and Source Tarball
+      uses: actions/upload-artifact@v3
+      with:
+        name: release-artifacts
+        path: |
+          dist/*.tar.gz
+          dist/*.whl
+
+  release:
+    name: Publish Release
+    runs-on: ubuntu-latest
+    if: github.event.repository.fork == false && github.event_name == 'push' && startsWith(github.ref, 'refs/tags')
+    environment: release
+    permissions:
+      contents: read
+      id-token: write  # IMPORTANT: this permission is mandatory for trusted publishing
+    needs:
+      - build
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Upload Built Wheel and Source Tarball
+      uses: actions/download-artifact@v3
+      with:
+        name: release-artifacts
+        path: dist/
+
+    - name: Publish distribution 📦 to Test PyPI
+      uses: pypa/gh-action-pypi-publish@v1.8.5
+      with:
+        repository-url: https://test.pypi.org/legacy/
+        print-hash: true
+
+    - name: Publish distribution 📦 to PyPI
+      uses: pypa/gh-action-pypi-publish@v1.8.5
+      with:
+        print-hash: true
