@@ -125,6 +125,7 @@ format = "grouped"
   "C901",
   "PLR0912",
   "DTZ005",
+  "FBT002",
 ]
 "tools/**/*.py" = [
   "ANN201",   # Missing return type annotation for public function"
