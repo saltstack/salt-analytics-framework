@@ -99,7 +99,7 @@ def download_onedir(
             selected_fname_details = details
             break
         else:
-            ctx.error(f"Could not find a onedir matching platform {platform} and arch {arch}")
+            ctx.error(f"Could not find a onedir matching platform {platform!r} and arch {arch!r}")
             ctx.exit(1)
         ctx.info("Selected onedir archive details:")
         ctx.print(selected_fname_details, soft_wrap=True)
