@@ -5,6 +5,9 @@ on:
   - push
   - pull_request
 
+env:
+  COLUMNS: 190
+
 concurrency:
   # Concurrency is defined in a way that concurrent builds against branches do
   # not cancel previous builds.
