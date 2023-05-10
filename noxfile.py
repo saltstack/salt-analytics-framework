@@ -208,36 +208,43 @@ def _tests(session, onedir=False):
         with contextlib.suppress(CommandFailed):
             session.run("coverage", "combine")
 
-        # Generate report for salt code coverage
-        session.run(
-            "coverage",
-            "xml",
-            "-o",
-            str(COVERAGE_REPORT_PROJECT),
-            "--omit=tests/*",
-            "--include=src/saf/*",
-        )
-        # Generate report for tests code coverage
-        session.run(
-            "coverage",
-            "xml",
-            "-o",
-            str(COVERAGE_REPORT_TESTS),
-            "--omit=src/saf/*",
-            "--include=tests/*",
-        )
         try:
-            session.run("coverage", "report", "--show-missing", "--include=src/saf/*")
-            # If you also want to display the code coverage report on the CLI
-            # for the tests, comment the call above and uncomment the line below
-            # session.run(
-            #    "coverage", "report", "--show-missing",
-            #    "--include=src/saf/*,tests/*"
-            # )
-        finally:
-            # Move the coverage DB to artifacts/coverage in order for it to be archived by CI
-            if COVERAGE_REPORT_DB.exists():
-                shutil.move(str(COVERAGE_REPORT_DB), str(ARTIFACTS_DIR / COVERAGE_REPORT_DB.name))
+            # Generate report for salt code coverage
+            session.run(
+                "coverage",
+                "xml",
+                "-o",
+                str(COVERAGE_REPORT_PROJECT),
+                "--omit=tests/*",
+                "--include=src/saf/*",
+            )
+            # Generate report for tests code coverage
+            session.run(
+                "coverage",
+                "xml",
+                "-o",
+                str(COVERAGE_REPORT_TESTS),
+                "--omit=src/saf/*",
+                "--include=tests/*",
+            )
+            try:
+                session.run("coverage", "report", "--show-missing", "--include=src/saf/*")
+                # If you also want to display the code coverage report on the CLI
+                # for the tests, comment the call above and uncomment the line below
+                # session.run(
+                #    "coverage", "report", "--show-missing",
+                #    "--include=src/saf/*,tests/*"
+                # )
+            finally:
+                # Move the coverage DB to artifacts/coverage in order for it to be archived by CI
+                if COVERAGE_REPORT_DB.exists():
+                    shutil.move(
+                        str(COVERAGE_REPORT_DB), str(ARTIFACTS_DIR / COVERAGE_REPORT_DB.name)
+                    )
+        except CommandFailed as exc:
+            # Tracking code coverage is still not working that well
+            if onedir is False:
+                raise exc from None
 
 
 @nox.session(python=PYTHON_VERSIONS)
