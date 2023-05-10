@@ -143,7 +143,7 @@ def _install_requirements(
 
 
 def _tests(session, onedir=False):
-    _install_requirements(session, "jinja2<3.1", install_source=True, onedir=onedir)
+    _install_requirements(session, install_source=True, onedir=onedir)
 
     sitecustomize_dir = session.run("salt-factories", "--coverage", silent=True, log=False)
     python_path_env_var = os.environ.get("PYTHONPATH") or None
