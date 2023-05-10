@@ -1,7 +1,5 @@
 # Copyright 2021-2023 VMware, Inc.
 # SPDX-License-Identifier: Apache-2.0
-#
-# pylint: disable=protected-access
 from __future__ import annotations
 
 import contextlib
@@ -11,6 +9,7 @@ import json
 import os
 import pathlib
 import shutil
+import sys
 import tarfile
 import tempfile
 from pathlib import Path
@@ -27,9 +26,7 @@ nox.options.error_on_missing_interpreters = False
 # Python versions to test against
 PYTHON_VERSIONS = ("3", "3.7", "3.8", "3.9", "3.10")
 # Be verbose when running under a CI context
-CI_RUN = (
-    os.environ.get("JENKINS_URL") or os.environ.get("CI") or os.environ.get("DRONE") is not None
-)
+CI_RUN = os.environ.get("CI") is not None
 PIP_INSTALL_SILENT = CI_RUN is False
 SKIP_REQUIREMENTS_INSTALL = "SKIP_REQUIREMENTS_INSTALL" in os.environ
 EXTRA_REQUIREMENTS_INSTALL = os.environ.get("EXTRA_REQUIREMENTS_INSTALL")
@@ -38,6 +35,15 @@ COVERAGE_VERSION_REQUIREMENT = "coverage==6.2"
 SALT_REQUIREMENT = os.environ.get("SALT_REQUIREMENT") or "salt>=3005"
 if SALT_REQUIREMENT == "salt==master":
     SALT_REQUIREMENT = "git+https://github.com/saltstack/salt.git@master"
+
+REPO_ROOT = pathlib.Path(os.path.dirname(__file__)).resolve()
+ARTIFACTS_DIR = REPO_ROOT / "artifacts"
+IS_WINDOWS = sys.platform.lower().startswith("win")
+ONEDIR_ARTIFACT_PATH = ARTIFACTS_DIR / "salt"
+if IS_WINDOWS:
+    ONEDIR_PYTHON_PATH = ONEDIR_ARTIFACT_PATH / "Scripts" / "python.exe"
+else:
+    ONEDIR_PYTHON_PATH = ONEDIR_ARTIFACT_PATH / "bin" / "python3"
 
 # Prevent Python from writing bytecode
 os.environ["PYTHONDONTWRITEBYTECODE"] = "1"
@@ -90,6 +96,7 @@ def _install_requirements(
     install_source=False,
     install_salt=True,
     install_extras=None,
+    onedir=False,
 ):
     install_extras = install_extras or []
     if SKIP_REQUIREMENTS_INSTALL is False:
@@ -112,7 +119,7 @@ def _install_requirements(
             install_command += [req.strip() for req in EXTRA_REQUIREMENTS_INSTALL.split()]
             session.install(*install_command, silent=PIP_INSTALL_SILENT)
 
-        if install_salt:
+        if onedir is False and install_salt:
             session.install("--progress-bar=off", SALT_REQUIREMENT, silent=PIP_INSTALL_SILENT)
 
         if install_test_requirements:
@@ -125,15 +132,18 @@ def _install_requirements(
             pkg = "."
             if install_extras:
                 pkg += f"[{','.join(install_extras)}]"
-            session.install("--progress-bar=off", "-e", pkg, silent=PIP_INSTALL_SILENT)
+            args = ["--progress-bar=off"]
+            if onedir is False:
+                args.append("-e")
+            args.append(pkg)
+            session.install(*args, silent=PIP_INSTALL_SILENT)
         elif install_extras:
             pkg = f".[{','.join(install_extras)}]"
             session.install("--progress-bar=off", pkg, silent=PIP_INSTALL_SILENT)
 
 
-@nox.session(python=PYTHON_VERSIONS)
-def tests(session):
-    _install_requirements(session, "jinja2<3.1", install_source=True)
+def _tests(session, onedir=False):
+    _install_requirements(session, "jinja2<3.1", install_source=True, onedir=onedir)
 
     sitecustomize_dir = session.run("salt-factories", "--coverage", silent=True, log=False)
     python_path_env_var = os.environ.get("PYTHONPATH") or None
@@ -154,6 +164,7 @@ def tests(session):
         "COVERAGE_FILE": str(COVERAGE_REPORT_DB),
         # Instruct sub processes to also run under coverage
         "COVERAGE_PROCESS_START": str(REPO_ROOT / ".coveragerc"),
+        "ONEDIR_TESTRUN": "1" if onedir else "0",
     }
 
     session.run("coverage", "erase")
@@ -227,6 +238,27 @@ def tests(session):
             # Move the coverage DB to artifacts/coverage in order for it to be archived by CI
             if COVERAGE_REPORT_DB.exists():
                 shutil.move(str(COVERAGE_REPORT_DB), str(ARTIFACTS_DIR / COVERAGE_REPORT_DB.name))
+
+
+@nox.session(python=PYTHON_VERSIONS)
+def tests(session):
+    _tests(session, onedir=False)
+
+
+@nox.session(
+    python=str(ONEDIR_PYTHON_PATH),
+    name="tests-onedir",
+    venv_params=["--system-site-packages"],
+)
+def test_onedir(session):
+    if not ONEDIR_ARTIFACT_PATH.exists():
+        session.error(
+            "The salt onedir artifact, expected to be in '{}', was not found".format(
+                ONEDIR_ARTIFACT_PATH.relative_to(REPO_ROOT)
+            )
+        )
+
+    _tests(session, onedir=True)
 
 
 class Tee:
