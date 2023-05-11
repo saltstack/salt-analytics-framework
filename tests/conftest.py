@@ -25,6 +25,17 @@ else:
         os.environ["COVERAGE_PROCESS_START"] = str(COVERAGERC_FILE)
 
 
+# ----- PyTest Tempdir Plugin Hooks -------------------------------------------------------------->
+def pytest_tempdir_basename() -> str:
+    """
+    Return the temporary directory basename for the salt test suite.
+    """
+    return "analytics"
+
+
+# <---- PyTest Tempdir Plugin Hooks ---------------------------------------------------------------
+
+
 @pytest.fixture(scope="session")
 def salt_factories_config() -> dict[str, Any]:
     """
