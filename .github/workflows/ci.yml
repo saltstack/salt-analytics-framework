@@ -172,11 +172,13 @@ jobs:
 
     - name: Install `tools` command
       if: ${{ matrix.source == 'onedir' }}
+      shell: bash
       run: |
         python -m pip install -r requirements/tools.txt
 
     - name: Download Salt Onedir
       if: ${{ matrix.source == 'onedir' }}
+      shell: bash
       run: |
         tools ci download-onedir --platform ${{ runner.os }} --arch ${{ runner.arch }} ${{ matrix.salt-version }}
 

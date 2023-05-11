@@ -10,6 +10,7 @@ import hashlib
 import json
 import logging
 import pathlib
+import shutil
 import tempfile
 
 from ptscripts import CWD
@@ -117,6 +118,10 @@ def download_onedir(
 
         ctx.info("The downloaded file checksum matches")
         with ctx.chdir(artifacts_path):
+            tar = shutil.which("tar")
+            if tar is None:
+                ctx.error("Could not find the 'tar' binary in path")
+                ctx.exit(1)
             ctx.info(f"Extracting {selected_fname_details['name']} to 'artifacts/' ...")
             ctx.run("tar", "xf", onedir_fpath)
 
