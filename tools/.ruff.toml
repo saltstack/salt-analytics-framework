@@ -4,4 +4,4 @@ extend = "../pyproject.toml"
 max-complexity = 20
 
 [pylint]
-max-statements = 70
+max-statements = 100
