@@ -137,6 +137,14 @@ def _download_file(ctx: Context, url: str, dest: str, auth: str | None = None) -
             ctx.error(f"Failed to download {url}")
             ctx.exit(1)
         return dest
+    wget = shutil.which("wget")
+    if wget is not None:
+        with ctx.cwd(dest.parent):
+            ret = ctx.run(wget, "--no-verbose", url)
+            if ret.returncode:
+                ctx.error(f"Failed to download {url}")
+                ctx.exit(1)
+        return dest
     # NOTE the stream=True parameter below
     ctx.info(f"Downloading {url} ...")
     with ctx.web.get(url, stream=True, auth=auth) as r:
