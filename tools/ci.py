@@ -11,6 +11,7 @@ import json
 import logging
 import pathlib
 import shutil
+import sys
 import tempfile
 
 from ptscripts import CWD
@@ -94,10 +95,16 @@ def download_onedir(
             ctx.exit(1)
         version_details = repo_json_data[salt_version]
         selected_fname_details: dict[str, str] | None = None
+        if platform == "windows":
+            file_extension = ".zip"
+        else:
+            file_extension = ".tar.xz"
         for _fname, details in version_details.items():
             if details["os"] != platform:
                 continue
             if details["arch"] != arch:
+                continue
+            if not details["name"].endswith(file_extension):
                 continue
             selected_fname_details = details
             break
@@ -118,12 +125,18 @@ def download_onedir(
 
         ctx.info("The downloaded file checksum matches")
         with ctx.chdir(artifacts_path):
-            tar = shutil.which("tar")
-            if tar is None:
-                ctx.error("Could not find the 'tar' binary in path")
-                ctx.exit(1)
-            ctx.info(f"Extracting {selected_fname_details['name']} to 'artifacts/' ...")
-            ctx.run("tar", "xf", onedir_fpath)
+            ctx.info(f"Extracting {onedir_fpath.name} to 'artifacts/' ...")
+            if platform == "windows":
+                ret = ctx.run(sys.executable, "-m", "zipfile", "-e", str(onedir_fpath), ".")
+                if ret.returncode:
+                    ctx.error(f"Failed to unzip {onedir_fpath.name}")
+                    ctx.exit(1)
+            else:
+                tar = shutil.which("tar")
+                if tar is None:
+                    ctx.error("Could not find the 'tar' binary in path")
+                    ctx.exit(1)
+                ctx.run("tar", "xf", onedir_fpath)
 
         with contextlib.suppress(PermissionError):
             onedir_fpath.unlink()
