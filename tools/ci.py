@@ -5,6 +5,7 @@ These commands are used in the CI pipeline.
 """
 from __future__ import annotations
 
+import contextlib
 import hashlib
 import json
 import logging
@@ -81,8 +82,9 @@ def download_onedir(
         ctx.info(f"Targetting the latest Salt minor version of {salt_version}")
 
     repo_json_url = f"{repo_base_url}/repo.json"
-    with ctx.web, tempfile.TemporaryDirectory(prefix=f"{salt_version}_release_") as tsd:
-        repo_json_file = _download_file(ctx, repo_json_url, pathlib.Path(tsd, "repo.json"))
+    tempdir_path = pathlib.Path(tempfile.gettempdir())
+    with ctx.web:
+        repo_json_file = _download_file(ctx, repo_json_url, tempdir_path / "repo.json")
         repo_json_data = json.loads(repo_json_file.read_text())
         ctx.info("Contents of the downloaded 'repo.json' file:")
         ctx.print(repo_json_data, soft_wrap=True)
@@ -105,7 +107,7 @@ def download_onedir(
         ctx.print(selected_fname_details, soft_wrap=True)
         onedir_url = f"{repo_base_url}/{salt_version}/{selected_fname_details['name']}"
         onedir_fpath = _download_file(
-            ctx, onedir_url, pathlib.Path(tsd, selected_fname_details["name"])
+            ctx, onedir_url, tempdir_path / selected_fname_details["name"]
         )
         onedir_checksum = _get_file_checksum(onedir_fpath, "sha512")
         if onedir_checksum != selected_fname_details["SHA512"]:
@@ -117,6 +119,9 @@ def download_onedir(
         with ctx.chdir(artifacts_path):
             ctx.info(f"Extracting {selected_fname_details['name']} to 'artifacts/' ...")
             ctx.run("tar", "xf", onedir_fpath)
+
+        with contextlib.suppress(PermissionError):
+            onedir_fpath.unlink()
 
 
 def _download_file(ctx: Context, url: str, dest: str, auth: str | None = None) -> str:
