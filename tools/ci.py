@@ -130,6 +130,13 @@ def download_onedir(
 
 
 def _download_file(ctx: Context, url: str, dest: str, auth: str | None = None) -> str:
+    curl = shutil.which("curl")
+    if curl is not None:
+        ret = ctx.run(curl, "-sS", "-o", str(dest), url)
+        if ret.returncode:
+            ctx.error(f"Failed to download {url}")
+            ctx.exit(1)
+        return dest
     # NOTE the stream=True parameter below
     ctx.info(f"Downloading {url} ...")
     with ctx.web.get(url, stream=True, auth=auth) as r:
