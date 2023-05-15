@@ -70,7 +70,7 @@ repos:
           - jinja2==3.1.2
           - packaging==23.0
 
-  # ----- Formatting ---------------------------------------------------------------------------->
+  # ----- Code Formatting and Analysis ---------------------------------------------------------->
   - repo: https://github.com/charliermarsh/ruff-pre-commit
     rev: "v0.0.265"
     hooks:
@@ -94,9 +94,7 @@ repos:
         files: ^(docs/.*\.rst|src/saf/.*\.py)$
         additional_dependencies:
           - black==23.3.0
-  # <---- Formatting -----------------------------------------------------------------------------
 
-  # ----- Code Analysis ------------------------------------------------------------------------->
   - repo: https://github.com/pre-commit/mirrors-mypy
     rev: v1.2.0
     hooks:
@@ -108,4 +106,4 @@ repos:
           - types-attrs
           - types-setuptools
           - pydantic
-  # <---- Code Analysis --------------------------------------------------------------------------
+  # <---- Code Formatting and Analysis -----------------------------------------------------------
