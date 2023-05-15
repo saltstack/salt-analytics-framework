@@ -27,7 +27,6 @@ class DiskConfig(ForwardConfigBase):
     path: pathlib.Path
     filename: Optional[str] = None
     pretty_print: bool = False
-    file_mode: str = "a"
 
 
 def get_config_schema() -> Type[DiskConfig]:
@@ -54,7 +53,7 @@ async def forward(
     if config.filename:
         dest = config.path / config.filename
         dest.touch()
-        with dest.open(config.file_mode) as wfh:
+        with dest.open("a") as wfh:
             wrote = wfh.write(event.json(indent=indent) + "\n")
     else:
         file_count = len(list(config.path.iterdir()))
