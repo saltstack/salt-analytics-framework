@@ -13,6 +13,7 @@ from typing import Any
 from typing import Dict
 from typing import Generic
 from typing import List
+from typing import Mapping
 from typing import Optional
 from typing import Type
 from typing import TypeVar
@@ -299,7 +300,7 @@ class CollectedEvent(BaseModel):
     Class representing each of the collected events.
     """
 
-    data: Dict[str, Any]
+    data: Mapping[str, Any]
     timestamp: Optional[datetime] = Field(default_factory=dt.utcnow)
 
 
