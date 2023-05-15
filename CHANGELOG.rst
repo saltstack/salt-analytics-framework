@@ -14,6 +14,24 @@ Backward incompatible (breaking) changes will only be introduced in major versio
 .. towncrier release notes start
 
 
+0.1.1 (2023-05-15)
+==================
+
+Improvements
+------------
+
+- `#30 <https://github.com/saltstack/pytest-skip-markers/issues/30>`_: The `CollectedEvent.data` type is now `Mapping` instead of `Dict`. This allows to use `TypedDict`'s for that attribute.
+
+
+
+Trivial/Internal Changes
+------------------------
+
+- `#29 <https://github.com/saltstack/pytest-skip-markers/issues/29>`_: Start testing against Salt's onedir archives.
+
+- `#30 <https://github.com/saltstack/pytest-skip-markers/issues/30>`_: Fix `.pre-commit-config.yaml` headers
+
+
 0.1.0 (2023-04-28)
 ==================
 
