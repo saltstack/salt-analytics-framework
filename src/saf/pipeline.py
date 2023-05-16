@@ -96,35 +96,41 @@ class Pipeline:
             async for event in collect_plugin.collect(ctx=collect_ctx):
                 events_to_process: list[CollectedEvent] = [event]
                 processed_events: list[CollectedEvent] = []
-                # Process the event
-                stop_processing = False
-                for process_config in self.process_configs:
-                    if stop_processing:
-                        break
-                    if not events_to_process:
-                        events_to_process.extend(processed_events)
-                        processed_events.clear()
-                    if process_config.name not in process_ctxs:
-                        process_ctxs[process_config.name] = PipelineRunContext.construct(
-                            config=process_config,
-                            shared_cache=shared_cache,
-                        )
-                    process_plugin = process_config.loaded_plugin
-                    while events_to_process:
-                        event_to_process = events_to_process.pop(0)
-                        try:
-                            async for processed_event in process_plugin.process(
-                                ctx=process_ctxs[process_config.name],
-                                event=event_to_process,
-                            ):
-                                if processed_event is not None:
-                                    processed_events.append(processed_event)
-                        except Exception:
-                            log.exception(
-                                "An exception occurred while processing the event. Stopped processing this event."
-                            )
-                            stop_processing = True
+                if not self.process_configs:
+                    # Consider all events to process as processed
+                    processed_events.extend(events_to_process)
+                    events_to_process.clear()
+                else:
+                    # Process the event
+                    stop_processing = False
+                    for process_config in self.process_configs:
+                        if stop_processing:
                             break
+                        if not events_to_process:
+                            events_to_process.extend(processed_events)
+                            processed_events.clear()
+                        if process_config.name not in process_ctxs:
+                            process_ctxs[process_config.name] = PipelineRunContext.construct(
+                                config=process_config,
+                                shared_cache=shared_cache,
+                            )
+                        process_plugin = process_config.loaded_plugin
+                        while events_to_process:
+                            event_to_process = events_to_process.pop(0)
+                            try:
+                                async for processed_event in process_plugin.process(
+                                    ctx=process_ctxs[process_config.name],
+                                    event=event_to_process,
+                                ):
+                                    if processed_event is not None:
+                                        processed_events.append(processed_event)
+                            except Exception:
+                                log.exception(
+                                    "An exception occurred while processing the event. "
+                                    "Stopped processing this event."
+                                )
+                                stop_processing = True
+                                break
 
                 if not processed_events:
                     # The processor(s) did not return any events to forward

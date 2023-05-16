@@ -180,4 +180,4 @@ keep-runtime-typing = true
 max-complexity = 20
 
 [tool.ruff.pylint]
-max-branches = 20
+max-branches = 25
