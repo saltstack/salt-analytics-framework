@@ -94,49 +94,59 @@ class Pipeline:
         try:
             collect_plugin = self.collect_config.loaded_plugin
             async for event in collect_plugin.collect(ctx=collect_ctx):
+                events_to_process: list[CollectedEvent] = [event]
+                processed_events: list[CollectedEvent] = []
                 # Process the event
+                stop_processing = False
                 for process_config in self.process_configs:
+                    if stop_processing:
+                        break
+                    if not events_to_process:
+                        events_to_process.extend(processed_events)
+                        processed_events.clear()
                     if process_config.name not in process_ctxs:
                         process_ctxs[process_config.name] = PipelineRunContext.construct(
                             config=process_config,
                             shared_cache=shared_cache,
                         )
-                    # We pass copies of the event so that, in case an exception occurs while
-                    # the event is being processed, and the event has already been modified,
-                    # the next processor to run will get an unmodified copy of the event, not
-                    # the partially processed event
                     process_plugin = process_config.loaded_plugin
-                    try:
-                        event = await process_plugin.process(  # noqa: PLW2901
-                            ctx=process_ctxs[process_config.name],
-                            event=event,
-                        )
-                    except Exception:
-                        log.exception(
-                            "An exception occurred while processing the event. Stopped processing this event."
-                        )
-                        break
+                    while events_to_process:
+                        event_to_process = events_to_process.pop(0)
+                        try:
+                            async for processed_event in process_plugin.process(
+                                ctx=process_ctxs[process_config.name],
+                                event=event_to_process,
+                            ):
+                                if processed_event is not None:
+                                    processed_events.append(processed_event)
+                        except Exception:
+                            log.exception(
+                                "An exception occurred while processing the event. Stopped processing this event."
+                            )
+                            stop_processing = True
+                            break
 
-                if event is None:
-                    # The processor decided to ignore the event
+                if not processed_events:
+                    # The processor(s) did not return any events to forward
                     continue
 
                 # Forward the event
                 coros = []
-                for forward_config in self.forward_configs:
-                    if forward_config.name not in forward_ctxs:
-                        forward_ctxs[forward_config.name] = PipelineRunContext.construct(
-                            config=forward_config,
-                            shared_cache=shared_cache,
+                for processed_event in processed_events:
+                    for forward_config in self.forward_configs:
+                        if forward_config.name not in forward_ctxs:
+                            forward_ctxs[forward_config.name] = PipelineRunContext.construct(
+                                config=forward_config,
+                                shared_cache=shared_cache,
+                            )
+                        forward_plugin = forward_config.loaded_plugin
+                        coros.append(
+                            self._wrap_forwarder_plugin_call(
+                                forward_plugin,
+                                forward_ctxs[forward_config.name],
+                                processed_event.copy(),
+                            ),
                         )
-                    forward_plugin = forward_config.loaded_plugin
-                    coros.append(
-                        self._wrap_forwarder_plugin_call(
-                            forward_plugin,
-                            forward_ctxs[forward_config.name],
-                            event.copy(),
-                        ),
-                    )
                 if self.config.concurrent_forwarders:
                     await asyncio.gather(*coros)
                 else:

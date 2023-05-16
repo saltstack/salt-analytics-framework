@@ -48,7 +48,7 @@ def _construct_event(event_data: dict[str, Any]) -> SaltEvent | None:
     return salt_event
 
 
-def _process_events(  # noqa: C901
+def _process_events(
     opts: dict[str, Any],
     events_queue: Queue[SaltEvent],
     tags: set[str],

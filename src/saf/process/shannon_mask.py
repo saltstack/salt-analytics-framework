@@ -9,6 +9,7 @@ import logging
 import math
 import string
 from typing import Any
+from typing import AsyncIterator
 from typing import Optional
 from typing import Type
 
@@ -119,7 +120,7 @@ async def process(
     *,
     ctx: PipelineRunContext[ShannonMaskProcessConfig],
     event: CollectedEvent,
-) -> CollectedEvent:
+) -> AsyncIterator[CollectedEvent]:
     """
     Method called to mask the data based on normalized Shannon index values.
     """
@@ -127,4 +128,4 @@ async def process(
     log.info("Processing event in shannon_mask: %s", event.json())
     event_dict = event.dict()
     processed_event_dict = _shannon_process(event_dict, config)
-    return event.parse_obj(processed_event_dict)
+    yield event.parse_obj(processed_event_dict)

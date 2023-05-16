@@ -9,6 +9,7 @@ import functools
 import logging
 import re
 from typing import Any
+from typing import AsyncIterator
 from typing import Dict
 from typing import Match
 from typing import Optional
@@ -97,7 +98,7 @@ async def process(
     *,
     ctx: PipelineRunContext[RegexMaskProcessConfig],
     event: CollectedEvent,
-) -> CollectedEvent:
+) -> AsyncIterator[CollectedEvent]:
     """
     Method called to mask the data based on provided regex rules.
     """
@@ -105,4 +106,4 @@ async def process(
     log.info("Processing event in regex_mask: %s", event.json())
     event_dict = event.dict()
     processed_event_dict = _regex_process(event_dict, config)
-    return event.parse_obj(processed_event_dict)
+    yield event.parse_obj(processed_event_dict)
