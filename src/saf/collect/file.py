@@ -8,12 +8,9 @@ from __future__ import annotations
 import asyncio
 import logging
 import os
-import typing
+import pathlib  # noqa: TCH003
 from typing import AsyncIterator
 from typing import Type
-
-if typing.TYPE_CHECKING:
-    import pathlib
 
 from saf.models import CollectConfigBase
 from saf.models import CollectedEvent
