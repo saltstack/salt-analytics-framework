@@ -52,6 +52,6 @@ async def collect(*, ctx: PipelineRunContext[SaltExecConfig]) -> AsyncIterator[C
     while True:
         ret = loaded_fn(*config.args, **config.kwargs)
         event = CollectedEvent(data={"ret": ret})
-        log.info("CollectedEvent: %s", event)
+        log.debug("CollectedEvent: %s", event)
         yield event
         await asyncio.sleep(config.interval)
