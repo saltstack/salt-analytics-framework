@@ -98,7 +98,6 @@ class Pipeline:
                     # the event is being processed, and the event has already been modified,
                     # the next processor to run will get an unmodified copy of the event, not
                     # the partially processed event
-                    original_event = event.copy()
                     process_plugin = process_config.loaded_plugin
                     try:
                         event = await process_plugin.process(  # noqa: PLW2901
@@ -107,10 +106,10 @@ class Pipeline:
                         )
                     except Exception:
                         log.exception(
-                            "An exception occurred while processing the event",
+                            "An exception occurred while processing the event. Stopped processing this event."
                         )
-                        # Restore the original event
-                        event = original_event  # noqa: PLW2901
+                        break
+
                 # Forward the event
                 coros = []
                 for forward_config in self.forward_configs:
