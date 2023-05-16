@@ -110,6 +110,10 @@ class Pipeline:
                         )
                         break
 
+                if event is None:
+                    # The processor decided to ignore the event
+                    continue
+
                 # Forward the event
                 coros = []
                 for forward_config in self.forward_configs:
