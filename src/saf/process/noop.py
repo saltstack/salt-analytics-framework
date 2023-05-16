@@ -8,6 +8,7 @@ It doesn't really do anything to the collected event
 from __future__ import annotations
 
 import logging
+from typing import AsyncIterator
 from typing import Type
 
 from saf.models import CollectedEvent
@@ -28,9 +29,9 @@ async def process(
     *,
     ctx: PipelineRunContext[ProcessConfigBase],  # noqa: ARG001
     event: CollectedEvent,
-) -> CollectedEvent:
+) -> AsyncIterator[CollectedEvent]:
     """
     Method called to process the event.
     """
     log.info("Processing: %s", event)
-    return event
+    yield event
