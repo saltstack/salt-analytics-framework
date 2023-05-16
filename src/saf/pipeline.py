@@ -32,6 +32,12 @@ def _check_backoff_exception(exc: Exception) -> bool:
     return False
 
 
+def _log_backoff_exception(details: dict[str, Any]) -> None:
+    if details["tries"] == 1:
+        # Log the exception on the first time it occurs
+        log.exception(details["exception"])
+
+
 P = TypeVar("P", bound="Pipeline")
 
 
@@ -75,6 +81,7 @@ class Pipeline:
         jitter=backoff.full_jitter,
         max_tries=5,
         giveup=_check_backoff_exception,
+        on_backoff=_log_backoff_exception,
     )
     async def _run(self: P) -> None:
         shared_cache: dict[str, Any] = {}
