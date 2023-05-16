@@ -17,10 +17,10 @@ saf.collect.beacons module
    :undoc-members:
    :show-inheritance:
 
-saf.collect.logs module
+saf.collect.file module
 -----------------------
 
-.. automodule:: saf.collect.logs
+.. automodule:: saf.collect.file
    :members:
    :undoc-members:
    :show-inheritance:
