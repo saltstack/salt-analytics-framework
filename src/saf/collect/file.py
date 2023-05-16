@@ -1,7 +1,7 @@
 # Copyright 2021-2023 VMware, Inc.
 # SPDX-License-Identifier: Apache-2.0
 """
-A log collector plugin.
+A file collector plugin.
 """
 from __future__ import annotations
 
@@ -38,14 +38,14 @@ class FileCollectConfig(CollectConfigBase):
 
 def get_config_schema() -> Type[FileCollectConfig]:
     """
-    Get the log plugin configuration schema.
+    Get the file collect plugin configuration schema.
     """
     return FileCollectConfig
 
 
 async def collect(*, ctx: PipelineRunContext[FileCollectConfig]) -> AsyncIterator[CollectedEvent]:
     """
-    Method called to collect log events.
+    Method called to collect file contents.
     """
     config = ctx.config
     try:
