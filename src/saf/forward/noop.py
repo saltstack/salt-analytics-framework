@@ -32,4 +32,4 @@ async def forward(
     """
     Method called to forward the event.
     """
-    log.info("Forwarding: %s", event)
+    log.debug("Forwarding: %s", event)

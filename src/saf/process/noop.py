@@ -33,5 +33,5 @@ async def process(
     """
     Method called to process the event.
     """
-    log.info("Processing: %s", event)
+    log.debug("Processing: %s", event)
     yield event

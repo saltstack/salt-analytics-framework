@@ -43,6 +43,6 @@ async def collect(*, ctx: PipelineRunContext[NoopConfig]) -> AsyncIterator[Colle
     while True:
         ticks += 1
         event = CollectedEvent(data={"ticks": ticks})
-        log.info("CollectedEvent: %s", event)
+        log.debug("CollectedEvent: %s", event)
         yield event
         await asyncio.sleep(config.interval)

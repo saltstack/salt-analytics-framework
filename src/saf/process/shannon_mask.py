@@ -125,7 +125,7 @@ async def process(
     Method called to mask the data based on normalized Shannon index values.
     """
     config = ctx.config
-    log.info("Processing event in shannon_mask: %s", event.json())
+    log.debug("Processing event in shannon_mask: %s", event.json())
     event_dict = event.dict()
     processed_event_dict = _shannon_process(event_dict, config)
     yield event.parse_obj(processed_event_dict)
