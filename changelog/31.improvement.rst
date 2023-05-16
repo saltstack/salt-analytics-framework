@@ -1,1 +1,0 @@
-Refactored the logs collector into a generic file collector

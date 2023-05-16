@@ -1,1 +1,0 @@
-Processors can now return 1 or more events, they'll all get forwarded

@@ -1,1 +1,0 @@
-If one of the processors raises an exception, stop processing the event

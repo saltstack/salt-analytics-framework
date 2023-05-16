@@ -1,1 +1,0 @@
-If a processor decides not to return the passed event, no attempts to run the next processor on it or just forward it should be made

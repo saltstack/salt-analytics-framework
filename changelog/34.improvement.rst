@@ -1,1 +1,0 @@
-Log the traceback on the first time a pipeline run raises an exception
