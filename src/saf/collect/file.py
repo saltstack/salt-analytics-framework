@@ -9,12 +9,10 @@ import logging
 import os
 import pathlib  # noqa: TCH003
 from contextlib import ExitStack
-from typing import IO
 from typing import Any
 from typing import AsyncIterator
 from typing import List
 from typing import Type
-from typing import Union
 
 from saf.models import CollectConfigBase
 from saf.models import CollectedEvent
@@ -43,19 +41,6 @@ def get_config_schema() -> Type[FileCollectConfig]:
     return FileCollectConfig
 
 
-def _process_file(file_handle: IO[str], config: FileCollectConfig) -> Union[CollectedEvent, None]:
-    event = None
-    contents: Any
-    if config.multiline:
-        contents = file_handle.readlines()
-    else:
-        contents = file_handle.readline()
-    if contents:
-        event = CollectedEvent(data={"lines": contents})
-
-    return event
-
-
 async def collect(*, ctx: PipelineRunContext[FileCollectConfig]) -> AsyncIterator[CollectedEvent]:
     """
     Method called to collect file contents.
@@ -64,16 +49,24 @@ async def collect(*, ctx: PipelineRunContext[FileCollectConfig]) -> AsyncIterato
 
     with ExitStack() as stack:
         try:
-            handles = [
-                stack.enter_context(path.open(mode=config.file_mode)) for path in config.paths
-            ]
+            handles = {
+                str(path): stack.enter_context(path.open(mode=config.file_mode))
+                for path in config.paths
+            }
             if not config.backfill:
-                for handle in handles:
+                for handle in handles.values():
                     handle.seek(0, os.SEEK_END)
             while True:
-                for rfh in handles:
-                    contents = _process_file(rfh, config)
+                for path, rfh in handles.items():
+                    contents: Any
+                    if config.multiline:
+                        contents = rfh.readlines()
+                    else:
+                        contents = rfh.readline()
+                    if contents and isinstance(contents, str):
+                        contents = [contents]
                     if contents is not None:
-                        yield CollectedEvent(data={"lines": contents})
+                        for line in contents:
+                            yield CollectedEvent(data={"lines": line, "source": path})
         except FileNotFoundError as exc:
             log.debug("File %s not found", exc.filename)
