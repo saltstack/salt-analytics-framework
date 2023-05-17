@@ -14,6 +14,15 @@ Backward incompatible (breaking) changes will only be introduced in major versio
 .. towncrier release notes start
 
 
+0.3.0 (2023-05-17)
+==================
+
+Improvements
+------------
+
+- `#40 <https://github.com/saltstack/pytest-skip-markers/issues/40>`_: Allow the file collector to read from multiple files at a time
+
+
 0.2.0 (2023-05-16)
 ==================
 
