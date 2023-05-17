@@ -1,0 +1,1 @@
+Allow the file collector to read from multiple files at a time
