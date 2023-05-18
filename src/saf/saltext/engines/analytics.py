@@ -6,6 +6,7 @@ Salt engine module.
 """
 from __future__ import annotations
 
+import asyncio
 import logging
 import pathlib
 from typing import TYPE_CHECKING
@@ -64,10 +65,13 @@ def start() -> None:
     """
     Start the salt analytics engine.
     """
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
     config = AnalyticsConfig.parse_obj(get_config_dict())
     manager = Manager(config)
     aiorun.run(
         manager.run(),
+        loop=loop,
         stop_on_unhandled_errors=True,
         shutdown_callback=manager.await_stopped(),
     )
