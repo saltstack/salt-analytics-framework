@@ -77,7 +77,7 @@ async def _process_file(
                     data=CollectedLineData(line=line, source=path), backfill=True
                 )
         else:
-            await rfh.seek(os.SEEK_END)
+            await rfh.seek(0, os.SEEK_END)
         while True:
             line = await rfh.readline()
             if not line:
