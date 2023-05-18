@@ -19,7 +19,29 @@ from saf.models import CollectConfigBase
 from saf.models import CollectedEvent
 from saf.models import PipelineRunContext
 
+try:
+    from typing import TypedDict  # type: ignore[attr-defined]
+except ImportError:
+    from typing_extensions import TypedDict
+
 log = logging.getLogger(__name__)
+
+
+class CollectedLineData(TypedDict):
+    """
+    Collected event line data definition.
+    """
+
+    line: str
+    source: pathlib.Path
+
+
+class CollectedLineEvent(CollectedEvent):
+    """
+    Collected line event definition.
+    """
+
+    data: CollectedLineData
 
 
 class FileCollectConfig(CollectConfigBase):
@@ -41,7 +63,7 @@ def get_config_schema() -> Type[FileCollectConfig]:
 
 async def _process_file(
     *, path: pathlib.Path, backfill: bool = False
-) -> AsyncIterator[CollectedEvent]:
+) -> AsyncIterator[CollectedLineEvent]:
     """
     Process the given file and `yield` an even per read line.
     """
@@ -49,10 +71,12 @@ async def _process_file(
         if backfill is False:
             await rfh.seek(os.SEEK_END)
         async for line in rfh:
-            yield CollectedEvent(data={"line": line, "source": path})
+            yield CollectedLineEvent(data=CollectedLineData(line=line, source=path))
 
 
-async def collect(*, ctx: PipelineRunContext[FileCollectConfig]) -> AsyncIterator[CollectedEvent]:
+async def collect(
+    *, ctx: PipelineRunContext[FileCollectConfig]
+) -> AsyncIterator[CollectedLineEvent]:
     """
     Method called to collect file contents.
     """
