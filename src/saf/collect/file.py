@@ -10,6 +10,7 @@ import glob
 import logging
 import os
 import pathlib
+import sys
 from typing import AsyncIterator
 from typing import List
 from typing import Type
@@ -21,10 +22,10 @@ from saf.models import CollectConfigBase
 from saf.models import CollectedEvent
 from saf.models import PipelineRunContext
 
-try:
-    from typing import TypedDict  # type: ignore[attr-defined]
-except ImportError:
+if sys.version_info < (3, 9, 2):
     from typing_extensions import TypedDict
+else:
+    from typing import TypedDict  # type: ignore[attr-defined,no-redef]
 
 log = logging.getLogger(__name__)
 
