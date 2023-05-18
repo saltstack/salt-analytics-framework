@@ -43,6 +43,7 @@ class CollectedLineEvent(CollectedEvent):
     """
 
     data: CollectedLineData
+    backfill: bool = False
 
 
 class FileCollectConfig(CollectConfigBase):
@@ -69,7 +70,12 @@ async def _process_file(
     Process the given file and `yield` an even per read line.
     """
     async with aiofiles.open(path) as rfh:
-        if backfill is False:
+        if backfill:
+            async for line in rfh:
+                yield CollectedLineEvent(
+                    data=CollectedLineData(line=line, source=path), backfill=True
+                )
+        else:
             await rfh.seek(os.SEEK_END)
         while True:
             line = await rfh.readline()
