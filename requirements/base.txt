@@ -1,6 +1,8 @@
 salt>=3005
 pydantic>=1.8.2
 aiorun
+aiofiles
+aiostream
 importlib-metadata>=3.4.0,<5.0.0; python_version < "3.8"
 drain3
 psutil

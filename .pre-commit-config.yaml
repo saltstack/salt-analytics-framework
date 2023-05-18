@@ -106,4 +106,6 @@ repos:
           - types-attrs
           - types-setuptools
           - pydantic
+          - types-aiofiles
+          - aiostream
   # <---- Code Formatting and Analysis -----------------------------------------------------------
