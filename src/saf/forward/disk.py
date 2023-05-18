@@ -12,6 +12,8 @@ import pathlib
 from typing import Optional
 from typing import Type
 
+import aiofiles
+
 from saf.models import CollectedEvent
 from saf.models import ForwardConfigBase
 from saf.models import PipelineRunContext
@@ -53,10 +55,11 @@ async def forward(
     if config.filename:
         dest = config.path / config.filename
         dest.touch()
-        with dest.open("a") as wfh:
-            wrote = wfh.write(event.json(indent=indent) + "\n")
+        async with aiofiles.open(dest, "a", encoding="utf-8") as wfh:
+            wrote = await wfh.write(f"{event.json(indent=indent)}\n")
     else:
         file_count = len(list(config.path.iterdir()))
         dest = config.path / f"event-dump-{file_count + 1}.json"
-        wrote = dest.write_text(event.json(indent=indent))
+        async with aiofiles.open(dest, "w", encoding="utf-8") as wfh:
+            wrote = await wfh.write(event.json(indent=indent))
     log.debug("Wrote %s bytes to %s", wrote, dest)

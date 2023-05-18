@@ -7,12 +7,13 @@ from __future__ import annotations
 
 import logging
 import os
-import pathlib  # noqa: TCH003
-from contextlib import ExitStack
-from typing import Any
+import pathlib
 from typing import AsyncIterator
 from typing import List
 from typing import Type
+
+import aiofiles
+import aiostream.stream
 
 from saf.models import CollectConfigBase
 from saf.models import CollectedEvent
@@ -29,9 +30,6 @@ class FileCollectConfig(CollectConfigBase):
     paths: List[pathlib.Path]
     # If true, starts at the beginning of a file, else at the end
     backfill: bool = False
-    # If true, reads to the end of the file, else one line at a time
-    multiline: bool = False
-    file_mode: str = "r"
 
 
 def get_config_schema() -> Type[FileCollectConfig]:
@@ -41,32 +39,34 @@ def get_config_schema() -> Type[FileCollectConfig]:
     return FileCollectConfig
 
 
+async def _process_file(
+    *, path: pathlib.Path, backfill: bool = False
+) -> AsyncIterator[CollectedEvent]:
+    """
+    Process the given file and `yield` an even per read line.
+    """
+    async with aiofiles.open(path) as rfh:
+        if backfill is False:
+            await rfh.seek(os.SEEK_END)
+        async for line in rfh:
+            yield CollectedEvent(data={"line": line, "source": path})
+
+
 async def collect(*, ctx: PipelineRunContext[FileCollectConfig]) -> AsyncIterator[CollectedEvent]:
     """
     Method called to collect file contents.
     """
     config = ctx.config
-
-    with ExitStack() as stack:
-        try:
-            handles = {
-                str(path): stack.enter_context(path.open(mode=config.file_mode))
-                for path in config.paths
-            }
-            if not config.backfill:
-                for handle in handles.values():
-                    handle.seek(0, os.SEEK_END)
-            while True:
-                for path, rfh in handles.items():
-                    contents: Any
-                    if config.multiline:
-                        contents = rfh.readlines()
-                    else:
-                        contents = rfh.readline()
-                    if contents and isinstance(contents, str):
-                        contents = [contents]
-                    if contents is not None:
-                        for line in contents:
-                            yield CollectedEvent(data={"lines": line, "source": path})
-        except FileNotFoundError as exc:
-            log.debug("File %s not found", exc.filename)
+    streams = []
+    for path in config.paths:
+        if not path.is_file():
+            log.error(
+                "The provided path '%s' does not exist or is not a file. Ignoring.",
+                path,
+            )
+            continue
+        streams.append(_process_file(path=path, backfill=config.backfill))
+    combined = aiostream.stream.merge(*streams)
+    async with combined.stream() as stream:
+        async for event in stream:
+            yield event
