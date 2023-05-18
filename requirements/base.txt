@@ -1,9 +1,10 @@
-salt>=3005
-pydantic>=1.8.2
-aiorun
 aiofiles
+aiorun
 aiostream
-importlib-metadata>=3.4.0,<5.0.0; python_version < "3.8"
-drain3
-psutil
 backoff
+drain3
+importlib-metadata>=3.4.0,<5.0.0; python_version < "3.8"
+psutil
+pydantic>=1.8.2
+salt>=3005
+typing-extensions; python_version < "3.9"

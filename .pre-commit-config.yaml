@@ -108,4 +108,5 @@ repos:
           - pydantic
           - types-aiofiles
           - aiostream
+          - typing-extensions; python_version < "3.9"
   # <---- Code Formatting and Analysis -----------------------------------------------------------
