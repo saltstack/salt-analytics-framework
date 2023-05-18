@@ -6,6 +6,7 @@ A file collector plugin.
 from __future__ import annotations
 
 import asyncio
+import glob
 import logging
 import os
 import pathlib
@@ -93,13 +94,22 @@ async def collect(
     """
     config = ctx.config
     streams = []
-    for path in config.paths:
-        if not path.is_file():
+    for entry in config.paths:
+        glob_matches = glob.glob(str(entry))
+        if not glob_matches:
             log.error(
-                "The provided path '%s' does not exist or is not a file. Ignoring.",
-                path,
+                "The glob matching for provided path '%s' did not return any results. Ignoring.",
+                entry,
             )
             continue
+        for match in glob_matches:
+            path = pathlib.Path(match)
+            if not path.is_file():
+                log.error(
+                    "The provided path '%s' does not exist or is not a file. Ignoring.",
+                    path,
+                )
+                continue
         streams.append(_process_file(path=path, backfill=config.backfill))
     combined = aiostream.stream.merge(*streams)
     async with combined.stream() as stream:

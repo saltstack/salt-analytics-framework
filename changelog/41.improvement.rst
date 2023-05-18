@@ -1,1 +1,1 @@
-AsyncIO cooperative file reads/writes
+AsyncIO cooperative file reads/writes. Support glob matching on paths.
