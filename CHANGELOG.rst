@@ -14,6 +14,26 @@ Backward incompatible (breaking) changes will only be introduced in major versio
 .. towncrier release notes start
 
 
+0.4.0 (2023-05-18)
+==================
+
+Improvements
+------------
+
+- `#41 <https://github.com/saltstack/pytest-skip-markers/issues/41>`_: AsyncIO cooperative file reads/writes. Support glob matching on paths.
+
+
+
+Bug Fixes
+---------
+
+- `#42 <https://github.com/saltstack/pytest-skip-markers/issues/42>`_: Explicitly create a new loop and assign it to the current thread and avoid a `DeprecationWarning`
+
+- `#43 <https://github.com/saltstack/pytest-skip-markers/issues/43>`_: Fix the seek to end of file call
+
+- `#44 <https://github.com/saltstack/pytest-skip-markers/issues/44>`_: Import `TypedDict` from typing_extensions on Python < 3.9.2
+
+
 0.3.0 (2023-05-17)
 ==================
 
