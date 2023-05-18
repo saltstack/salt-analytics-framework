@@ -5,6 +5,7 @@ A file collector plugin.
 """
 from __future__ import annotations
 
+import asyncio
 import logging
 import os
 import pathlib
@@ -70,7 +71,11 @@ async def _process_file(
     async with aiofiles.open(path) as rfh:
         if backfill is False:
             await rfh.seek(os.SEEK_END)
-        async for line in rfh:
+        while True:
+            line = await rfh.readline()
+            if not line:
+                await asyncio.sleep(0.5)
+                continue
             yield CollectedLineEvent(data=CollectedLineData(line=line, source=path))
 
 
