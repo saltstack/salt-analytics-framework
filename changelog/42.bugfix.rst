@@ -1,1 +1,1 @@
-Allow `aiorun` to create the loop and avoid a `DeprecationWarning`
+Explicitly create a new loop and assign it to the current thread and avoid a `DeprecationWarning`
