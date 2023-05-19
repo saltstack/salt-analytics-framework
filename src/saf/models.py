@@ -233,7 +233,6 @@ class PipelineConfig(NonMutableConfig):
     process: List[str] = Field(default_factory=list)
     forward: List[str]
     enabled: bool = True
-    concurrent_forwarders: bool = True
 
     _name: str = PrivateAttr()
 

@@ -153,11 +153,7 @@ class Pipeline:
                                 processed_event.copy(),
                             ),
                         )
-                if self.config.concurrent_forwarders:
-                    await asyncio.gather(*coros)
-                else:
-                    for coro in coros:
-                        await coro
+                await asyncio.gather(*coros)
         finally:
             shared_cache.clear()
             process_ctxs.clear()
