@@ -14,13 +14,8 @@ def forwarder_dump_path(tmp_path):
     return tmp_path / "forwarder-dump.txt"
 
 
-@pytest.fixture(params=(True, False), ids=lambda x: f"ConcurrentForwarders({x})")
-def concurrent_forwarders(request):
-    return request.param
-
-
 @pytest.fixture
-def analytics_config_dict(forwarder_dump_path, concurrent_forwarders):
+def analytics_config_dict(forwarder_dump_path):
     return {
         "collectors": {
             "noop-collector": {"plugin": "noop", "interval": 5},
@@ -48,7 +43,6 @@ def analytics_config_dict(forwarder_dump_path, concurrent_forwarders):
         "pipelines": {
             "my-pipeline": {
                 "enabled": True,
-                "concurrent_forwarders": concurrent_forwarders,
                 "collect": "noop-collector",
                 "forward": [
                     "forwarder-3",
@@ -63,8 +57,8 @@ def analytics_config_dict(forwarder_dump_path, concurrent_forwarders):
 
 @pytest.mark.asyncio
 @pytest.mark.usefixtures("manager")
-async def test_pipeline(forwarder_dump_path: pathlib.Path, concurrent_forwarders):
-    synchronous_outcome = ["3", "2", "1"]
+async def test_pipeline(forwarder_dump_path: pathlib.Path):
+    expected_outcome = ["1", "2", "3"]
     timeout = 5
     while timeout:
         await asyncio.sleep(1)
@@ -73,10 +67,7 @@ async def test_pipeline(forwarder_dump_path: pathlib.Path, concurrent_forwarders
             continue
         lines = forwarder_dump_path.read_text().splitlines()
         if len(lines) >= 3:
-            if concurrent_forwarders is False:
-                assert lines[:3] == synchronous_outcome
-            else:
-                assert lines[:3] != synchronous_outcome
+            assert sorted(lines[:3]) == expected_outcome
             break
     else:
         pytest.fail(f"Failed to find dumped events in {forwarder_dump_path}")
