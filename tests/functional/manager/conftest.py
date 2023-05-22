@@ -33,7 +33,7 @@ async def _run_manager(manager):
 def analytics_config_dict():
     return {
         "collectors": {
-            "noop-collector": {"plugin": "noop", "interval": 1},
+            "test-collector": {"plugin": "test", "interval": 1},
         },
         "processors": {
             "noop-processor": {
@@ -48,7 +48,7 @@ def analytics_config_dict():
         "pipelines": {
             "my-pipeline": {
                 "enabled": False,
-                "collect": "noop-collector",
+                "collect": "test-collector",
                 "process": "noop-processor",
                 "forward": "noop-forwarder",
             }
