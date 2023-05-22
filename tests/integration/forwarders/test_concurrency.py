@@ -3,10 +3,20 @@
 #
 from __future__ import annotations
 
-import asyncio
 import pathlib
 
 import pytest
+
+
+@pytest.fixture
+def collectors_config():
+    return {
+        "test-collector": {
+            "plugin": "test",
+            "count": 1,
+            "interval": 0.05,
+        },
+    }
 
 
 @pytest.fixture
@@ -15,59 +25,33 @@ def forwarder_dump_path(tmp_path):
 
 
 @pytest.fixture
-def analytics_config_dict(forwarder_dump_path):
+def forwarders_config(forwarder_dump_path):
     return {
-        "collectors": {
-            "test-collector": {"plugin": "test", "interval": 0.05, "count": 1},
+        "forwarder-1": {
+            "plugin": "test",
+            "sleep": 0.5,
+            "path": forwarder_dump_path,
+            "message": "1",
         },
-        "forwarders": {
-            "forwarder-1": {
-                "plugin": "test",
-                "sleep": 0.1,
-                "path": forwarder_dump_path,
-                "message": "1",
-            },
-            "forwarder-2": {
-                "plugin": "test",
-                "sleep": 0.3,
-                "path": forwarder_dump_path,
-                "message": "2",
-            },
-            "forwarder-3": {
-                "plugin": "test",
-                "sleep": 0.5,
-                "path": forwarder_dump_path,
-                "message": "3",
-            },
+        "forwarder-2": {
+            "plugin": "test",
+            "sleep": 0.3,
+            "path": forwarder_dump_path,
+            "message": "2",
         },
-        "pipelines": {
-            "my-pipeline": {
-                "enabled": True,
-                "collect": "test-collector",
-                "forward": [
-                    "forwarder-3",
-                    "forwarder-2",
-                    "forwarder-1",
-                ],
-            }
+        "forwarder-3": {
+            "plugin": "test",
+            "sleep": 0.1,
+            "path": forwarder_dump_path,
+            "message": "3",
         },
-        "salt_config": {},
     }
 
 
 @pytest.mark.asyncio
-@pytest.mark.usefixtures("manager")
-async def test_pipeline(forwarder_dump_path: pathlib.Path):
+async def test_pipeline(pipeline, forwarder_dump_path: pathlib.Path):
+    # run the pipeline
+    await pipeline.run()
     expected_outcome = ["1", "2", "3"]
-    timeout = 5
-    while timeout:
-        await asyncio.sleep(1)
-        timeout -= 1
-        if not forwarder_dump_path.exists():
-            continue
-        lines = forwarder_dump_path.read_text().splitlines()
-        if len(lines) >= 3:
-            assert sorted(lines[:3]) == expected_outcome
-            break
-    else:
-        pytest.fail(f"Failed to find dumped events in {forwarder_dump_path}")
+    lines = forwarder_dump_path.read_text().splitlines()
+    assert sorted(lines[:3]) == expected_outcome
