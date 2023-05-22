@@ -74,6 +74,12 @@ class Pipeline:
                     self.name,
                 )
                 break
+            if self.config.restart is False:
+                log.info(
+                    "The pipelione %r has the 'restart' config setting set to False. "
+                    "Not restarting it."
+                )
+                break
 
     @backoff.on_exception(
         backoff.expo,

@@ -233,6 +233,7 @@ class PipelineConfig(NonMutableConfig):
     process: List[str] = Field(default_factory=list)
     forward: List[str]
     enabled: bool = True
+    restart: bool = True
 
     _name: str = PrivateAttr()
 

@@ -1,0 +1,1 @@
+Allow defining if a pipeline should restart or not when it ends or when it fails during processing.
