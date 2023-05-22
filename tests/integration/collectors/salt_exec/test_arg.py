@@ -33,8 +33,8 @@ def analytics_config_contents(analytics_events_dump_directory) -> str:
 
 
     processors:
-      noop-processor:
-        plugin: noop
+      test-processor:
+        plugin: test
 
 
     forwarders:
@@ -47,7 +47,7 @@ def analytics_config_contents(analytics_events_dump_directory) -> str:
     pipelines:
       my-pipeline:
         collect: salt-collector
-        process: noop-processor
+        process: test-processor
         forward: disk-forwarder
     """.format(
         analytics_events_dump_directory
