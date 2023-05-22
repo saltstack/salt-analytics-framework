@@ -51,12 +51,9 @@ def pipeline_name():
 
 @pytest.fixture
 def pipelines_config(collectors_config, processors_config, forwarders_config, pipeline_name):
-    collectors = list(collectors_config)
-    if len(collectors) > 1:
-        pytest.fail("Only one collector can be defined")
     return {
         pipeline_name: {
-            "collect": collectors[0],
+            "collect": list(collectors_config),
             "process": list(processors_config),
             "forward": list(forwarders_config),
             "enabled": True,
