@@ -30,16 +30,11 @@ def processors_config():
 
 
 @pytest.fixture
-def forwarded_events_path(tmp_path):
-    return tmp_path / "forwarded-events"
-
-
-@pytest.fixture
-def forwarders_config(forwarded_events_path):
+def forwarders_config():
     return {
         "test-forwarder": {
-            "plugin": "disk",
-            "path": forwarded_events_path,
+            "plugin": "test",
+            "add_event_to_shared_cache": True,
         },
     }
 

@@ -86,6 +86,7 @@ class Manager:
             return f"Pipeline {name!r} is disabled, skipping start."
         if name in self.pipeline_tasks:
             return f"Pipeline {name!r} is already running"
+        pipeline.__enter__()
         self.pipeline_tasks[name] = self.loop.create_task(pipeline.run())
         return None
 
@@ -100,4 +101,6 @@ class Manager:
         if task.done() is not True:
             task.cancel()
             await task
+        pipeline = self.pipelines[name]
+        pipeline.__exit__()
         return None

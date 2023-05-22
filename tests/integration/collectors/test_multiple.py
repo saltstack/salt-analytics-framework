@@ -3,8 +3,6 @@
 #
 from __future__ import annotations
 
-import pathlib
-
 import pytest
 
 
@@ -25,9 +23,11 @@ def collectors_config():
 
 
 @pytest.mark.asyncio
-async def test_pipeline(pipeline, forwarded_events_path: pathlib.Path):
+async def test_pipeline(pipeline):
+    assert "collected_events" not in pipeline.shared_cache
     # run the pipeline
-    await pipeline.run()
-    assert forwarded_events_path.is_dir()
-    forwarded_events_count = len(list(forwarded_events_path.iterdir()))
-    assert forwarded_events_count == 6
+    with pipeline:
+        await pipeline.run()
+        assert pipeline.shared_cache
+        forwarded_events_count = len(pipeline.shared_cache["collected_events"])
+        assert forwarded_events_count == 6
