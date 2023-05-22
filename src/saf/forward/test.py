@@ -14,8 +14,11 @@ import asyncio
 import json
 import logging
 import pathlib
+from typing import Any
 from typing import Optional
 from typing import Type
+
+from pydantic import root_validator
 
 from saf.models import CollectedEvent
 from saf.models import ForwardConfigBase
@@ -33,6 +36,19 @@ class TestForwardConfig(ForwardConfigBase):
     path: Optional[pathlib.Path] = None
     message: Optional[str] = None
     dump_event: bool = False
+    add_event_to_shared_cache: bool = False
+
+    @root_validator
+    @classmethod
+    def _check_mutually_exclusive_parameters(
+        cls: Type[TestForwardConfig], values: dict[str, Any]
+    ) -> dict[str, Any]:
+        path = values.get("path")
+        add_event_to_shared_cache = values.get("add_event_to_shared_cache") or False
+        if path and add_event_to_shared_cache:
+            msg = "The 'path' and 'add_event_to_shared_cache' are mutually exclusive"
+            raise ValueError(msg)
+        return values
 
 
 def get_config_schema() -> Type[TestForwardConfig]:
@@ -54,7 +70,15 @@ async def forward(
     log.info("Forwarding using %s: %s", config.name, event)
     if config.sleep > 0:
         await asyncio.sleep(config.sleep)
-    if config.path:
+    if config.add_event_to_shared_cache:
+        log.info(
+            "Storing collected events in `pipeline.shared_cache` under "
+            "the 'collected_events' key."
+        )
+        if "collected_events" not in ctx.shared_cache:
+            ctx.shared_cache["collected_events"] = []
+        ctx.shared_cache["collected_events"].append(event)
+    elif config.path:
         if config.message:
             if config.dump_event:
                 dump_text = json.dumps({config.message: event.dict()})
