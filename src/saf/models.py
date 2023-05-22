@@ -229,7 +229,7 @@ class PipelineConfig(NonMutableConfig):
     Base config schema for pipeline configuration.
     """
 
-    collect: str
+    collect: List[str]
     process: List[str] = Field(default_factory=list)
     forward: List[str]
     enabled: bool = True
@@ -266,6 +266,8 @@ class AnalyticsConfig(BaseModel):
     ) -> Dict[str, Dict[str, Any]]:
         for name, data in pipelines.items():
             collect = data["collect"]
+            if isinstance(collect, str):
+                collect = [collect]
             process = data.get("process")
             forward = data["forward"]
             if process is None:

@@ -9,8 +9,10 @@ import asyncio
 import logging
 from typing import TYPE_CHECKING
 from typing import Any
+from typing import AsyncIterator
 from typing import TypeVar
 
+import aiostream.stream
 import backoff
 
 from saf.models import CollectConfigBase
@@ -49,13 +51,20 @@ class Pipeline:
     def __init__(self: P, name: str, config: PipelineConfig) -> None:
         self.name = name
         self.config = config
-        self.collect_config: CollectConfigBase = config.parent.collectors[config.collect]
+        self.collect_configs: list[CollectConfigBase] = []
+        for config_name in config.collect:
+            self.collect_configs.append(config.parent.collectors[config_name])
         self.process_configs: list[ProcessConfigBase] = []
         for config_name in config.process:
             self.process_configs.append(config.parent.processors[config_name])
         self.forward_configs: list[ForwardConfigBase] = []
         for config_name in config.forward:
             self.forward_configs.append(config.parent.forwarders[config_name])
+
+        self.shared_cache: dict[str, Any] = {}
+        self.collect_ctxs: dict[str, PipelineRunContext[CollectConfigBase]] = {}
+        self.process_ctxs: dict[str, PipelineRunContext[ProcessConfigBase]] = {}
+        self.forward_ctxs: dict[str, PipelineRunContext[ForwardConfigBase]] = {}
 
     async def run(self: P) -> None:
         """
@@ -90,16 +99,9 @@ class Pipeline:
         on_backoff=_log_backoff_exception,
     )
     async def _run(self: P) -> None:
-        shared_cache: dict[str, Any] = {}
-        process_ctxs: dict[str, PipelineRunContext[ProcessConfigBase]] = {}
-        forward_ctxs: dict[str, PipelineRunContext[ForwardConfigBase]] = {}
-        collect_ctx: PipelineRunContext[CollectConfigBase] = PipelineRunContext.construct(
-            config=self.collect_config,
-            shared_cache=shared_cache,
-        )
+        self._build_contexts()
         try:
-            collect_plugin = self.collect_config.loaded_plugin
-            async for event in collect_plugin.collect(ctx=collect_ctx):
+            async for event in self._collectors_stream():
                 events_to_process: list[CollectedEvent] = [event]
                 processed_events: list[CollectedEvent] = []
                 if not self.process_configs:
@@ -115,17 +117,12 @@ class Pipeline:
                         if not events_to_process:
                             events_to_process.extend(processed_events)
                             processed_events.clear()
-                        if process_config.name not in process_ctxs:
-                            process_ctxs[process_config.name] = PipelineRunContext.construct(
-                                config=process_config,
-                                shared_cache=shared_cache,
-                            )
                         process_plugin = process_config.loaded_plugin
                         while events_to_process:
                             event_to_process = events_to_process.pop(0)
                             try:
                                 async for processed_event in process_plugin.process(
-                                    ctx=process_ctxs[process_config.name],
+                                    ctx=self.process_ctxs[process_config.name],
                                     event=event_to_process,
                                 ):
                                     if processed_event is not None:
@@ -146,24 +143,54 @@ class Pipeline:
                 coros = []
                 for processed_event in processed_events:
                     for forward_config in self.forward_configs:
-                        if forward_config.name not in forward_ctxs:
-                            forward_ctxs[forward_config.name] = PipelineRunContext.construct(
-                                config=forward_config,
-                                shared_cache=shared_cache,
-                            )
                         forward_plugin = forward_config.loaded_plugin
                         coros.append(
                             self._wrap_forwarder_plugin_call(
                                 forward_plugin,
-                                forward_ctxs[forward_config.name],
+                                self.forward_ctxs[forward_config.name],
                                 processed_event.copy(),
                             ),
                         )
                 await asyncio.gather(*coros)
         finally:
-            shared_cache.clear()
-            process_ctxs.clear()
-            forward_ctxs.clear()
+            self.shared_cache.clear()
+            self.collect_ctxs.clear()
+            self.process_ctxs.clear()
+            self.forward_ctxs.clear()
+
+    def _build_contexts(self: P) -> None:
+        for collect_config in self.collect_configs:
+            if collect_config.name not in self.collect_ctxs:
+                self.collect_ctxs[collect_config.name] = PipelineRunContext.construct(
+                    config=collect_config,
+                    shared_cache=self.shared_cache,
+                )
+        for process_config in self.process_configs:
+            if process_config.name not in self.process_ctxs:
+                self.process_ctxs[process_config.name] = PipelineRunContext.construct(
+                    config=process_config,
+                    shared_cache=self.shared_cache,
+                )
+        for forward_config in self.forward_configs:
+            if forward_config.name not in self.forward_ctxs:
+                self.forward_ctxs[forward_config.name] = PipelineRunContext.construct(
+                    config=forward_config,
+                    shared_cache=self.shared_cache,
+                )
+
+    async def _collectors_stream(self: P) -> AsyncIterator[CollectedEvent]:
+        collectors = []
+        for collect_config in self.collect_configs:
+            collect_plugin = collect_config.loaded_plugin
+            collectors.append(
+                collect_plugin.collect(
+                    ctx=self.collect_ctxs[collect_config.name],
+                ),
+            )
+        combined = aiostream.stream.merge(*collectors)
+        async with combined.stream() as stream:
+            async for event in stream:
+                yield event
 
     async def _wrap_forwarder_plugin_call(
         self: P,
