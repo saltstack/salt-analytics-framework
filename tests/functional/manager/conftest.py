@@ -36,8 +36,8 @@ def analytics_config_dict():
             "test-collector": {"plugin": "test", "interval": 1},
         },
         "processors": {
-            "noop-processor": {
-                "plugin": "noop",
+            "test-processor": {
+                "plugin": "test",
             },
         },
         "forwarders": {
@@ -49,7 +49,7 @@ def analytics_config_dict():
             "my-pipeline": {
                 "enabled": False,
                 "collect": "test-collector",
-                "process": "noop-processor",
+                "process": "test-processor",
                 "forward": "noop-forwarder",
             }
         },

@@ -9,10 +9,10 @@ saf.process package
 Submodules
 ----------
 
-saf.process.noop module
+saf.process.test module
 -----------------------
 
-.. automodule:: saf.process.noop
+.. automodule:: saf.process.test
    :members:
    :undoc-members:
    :show-inheritance:

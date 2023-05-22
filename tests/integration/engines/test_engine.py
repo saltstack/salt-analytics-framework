@@ -24,8 +24,8 @@ def minion(master: SaltMaster, analytics_events_dump_directory) -> SaltMinion:
         interval: 1
 
     processors:
-      noop-processor:
-        plugin: noop
+      test-processor:
+        plugin: test
 
 
     forwarders:
@@ -37,7 +37,7 @@ def minion(master: SaltMaster, analytics_events_dump_directory) -> SaltMinion:
     pipelines:
       my-pipeline:
         collect: test-collector
-        process: noop-processor
+        process: test-processor
         forward: disk-forwarder
     """.format(
         analytics_events_dump_directory
