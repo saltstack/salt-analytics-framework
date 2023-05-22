@@ -9,7 +9,6 @@ import pytest
 import pytest_asyncio
 
 from saf.manager import Manager
-from saf.models import AnalyticsConfig
 
 try:
     asyncio_fixture = pytest_asyncio.fixture
@@ -27,39 +26,6 @@ async def _run_manager(manager):
         pass
     finally:
         await manager.await_stopped()
-
-
-@pytest.fixture
-def analytics_config_dict():
-    return {
-        "collectors": {
-            "test-collector": {"plugin": "test", "interval": 1},
-        },
-        "processors": {
-            "test-processor": {
-                "plugin": "test",
-            },
-        },
-        "forwarders": {
-            "noop-forwarder": {
-                "plugin": "noop",
-            },
-        },
-        "pipelines": {
-            "my-pipeline": {
-                "enabled": False,
-                "collect": "test-collector",
-                "process": "test-processor",
-                "forward": "noop-forwarder",
-            }
-        },
-        "salt_config": {},
-    }
-
-
-@pytest.fixture
-def analytics_config(analytics_config_dict):
-    return AnalyticsConfig.parse_obj(analytics_config_dict)
 
 
 @asyncio_fixture
