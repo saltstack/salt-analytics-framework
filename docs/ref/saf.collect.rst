@@ -25,10 +25,10 @@ saf.collect.file module
    :undoc-members:
    :show-inheritance:
 
-saf.collect.noop module
+saf.collect.test module
 -----------------------
 
-.. automodule:: saf.collect.noop
+.. automodule:: saf.collect.test
    :members:
    :undoc-members:
    :show-inheritance:

@@ -18,7 +18,7 @@ def forwarder_dump_path(tmp_path):
 def analytics_config_dict(forwarder_dump_path):
     return {
         "collectors": {
-            "noop-collector": {"plugin": "noop", "interval": 5},
+            "test-collector": {"plugin": "test", "interval": 0.05, "count": 1},
         },
         "forwarders": {
             "forwarder-1": {
@@ -43,7 +43,7 @@ def analytics_config_dict(forwarder_dump_path):
         "pipelines": {
             "my-pipeline": {
                 "enabled": True,
-                "collect": "noop-collector",
+                "collect": "test-collector",
                 "forward": [
                     "forwarder-3",
                     "forwarder-2",

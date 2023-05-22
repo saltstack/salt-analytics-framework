@@ -19,8 +19,8 @@ def minion(master: SaltMaster, analytics_events_dump_directory) -> SaltMinion:
     factory = master.salt_minion_daemon(random_string("minion-"), defaults=default_config)
     analytics_config = """
     collectors:
-      noop-collector:
-        plugin: noop
+      test-collector:
+        plugin: test
         interval: 1
 
     processors:
@@ -36,7 +36,7 @@ def minion(master: SaltMaster, analytics_events_dump_directory) -> SaltMinion:
 
     pipelines:
       my-pipeline:
-        collect: noop-collector
+        collect: test-collector
         process: noop-processor
         forward: disk-forwarder
     """.format(
