@@ -182,6 +182,16 @@ jobs:
       run: |
         tools ci download-onedir --platform ${{ runner.os }} --arch ${{ runner.arch }} ${{ matrix.salt-version }}
 
+    - name: Download libeay32.dll
+      shell: bash
+      run: |
+        export PY_LOC=$(which python.exe)
+        echo ${PY_LOC}
+        export PY_DIR=$(dirname ${PY_LOC})
+        echo ${PY_DIR}
+        curl https://repo.saltproject.io/windows/dependencies/64/libeay32.dll --output ${PY_DIR}/libeay32.dll
+        ls -l ${PY_DIR}
+
     - name: Install Test Requirements
       env:
         SALT_REQUIREMENT: salt~=${{ matrix.salt-version }}
