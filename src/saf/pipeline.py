@@ -85,8 +85,9 @@ class Pipeline:
                 break
             if self.config.restart is False:
                 log.info(
-                    "The pipelione %r has the 'restart' config setting set to False. "
-                    "Not restarting it."
+                    "The pipeline %r has the 'restart' config setting set to False. "
+                    "Not restarting it.",
+                    self.name,
                 )
                 break
 
