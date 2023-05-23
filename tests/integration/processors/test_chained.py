@@ -21,12 +21,18 @@ def processors_config(process_child_events_count):
     return {
         "stage-1": {
             "plugin": "test",
-            "delay_range": (0.01, 0.07),
+            "delay_range": {
+                "minimum": 0.01,
+                "maximum": 0.07,
+            },
             "child_events_count": process_child_events_count,
         },
         "stage-2": {
             "plugin": "test",
-            "delay_range": (0.01, 0.07),
+            "delay_range": {
+                "minimum": 0.01,
+                "maximum": 0.07,
+            },
             "child_events_count": process_child_events_count,
         },
     }
