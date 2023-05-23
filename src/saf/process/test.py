@@ -23,6 +23,20 @@ from saf.models import ProcessConfigBase
 
 log = logging.getLogger(__name__)
 
+if sys.version_info < (3, 9, 2):
+    from typing_extensions import TypedDict
+else:
+    from typing import TypedDict  # type: ignore[attr-defined,no-redef]
+
+
+class DelayRange(TypedDict):
+    """
+    Delay range configuration.
+    """
+
+    minimum: float
+    maximum: float
+
 
 class TestProcessConfig(ProcessConfigBase):
     """
@@ -30,7 +44,7 @@ class TestProcessConfig(ProcessConfigBase):
     """
 
     delay: Optional[float] = Field(None, gt=0)
-    delay_range: Optional[tuple[float, float]] = None
+    delay_range: Optional[DelayRange] = None
     child_events_count: Optional[int] = Field(None, gt=0, lt=sys.maxsize)
 
 
@@ -55,7 +69,9 @@ async def process(
         await asyncio.sleep(config.delay)
     elif config.delay_range:
         await asyncio.sleep(
-            random.uniform(*config.delay_range),  # noqa: S311
+            random.uniform(  # noqa: S311
+                config.delay_range["minimum"], config.delay_range["maximum"]
+            ),
         )
     yield event
     if config.child_events_count:
@@ -71,7 +87,8 @@ async def process(
             elif config.delay_range:
                 await asyncio.sleep(
                     random.uniform(  # noqa: S311
-                        *config.delay_range,
+                        config.delay_range["minimum"],
+                        config.delay_range["maximum"],
                     )
                     * (config.child_events_count / counter),
                 )
