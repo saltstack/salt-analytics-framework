@@ -191,6 +191,8 @@ jobs:
         echo ${PY_DIR}
         curl https://repo.saltproject.io/windows/dependencies/64/libeay32.dll --output ${PY_DIR}/libeay32.dll
         ls -l ${PY_DIR}
+        which patch.exe
+        patch -h
 
     - name: Install Test Requirements
       shell: bash
