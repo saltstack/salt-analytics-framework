@@ -149,6 +149,8 @@ class Pipeline:
         async for processed_event in process_plugin.process(
             ctx=self.process_ctxs[process_config.name], event=event
         ):
+            # Allow other coroutines to run
+            await asyncio.sleep(0)
             if processed_event is not None:
                 yield processed_event
 
@@ -162,6 +164,8 @@ class Pipeline:
             assert process
         async with process.stream() as stream:
             async for processed_event in stream:
+                # Allow other coroutines to run
+                await asyncio.sleep(0)
                 if processed_event is not None:
                     yield processed_event
 
@@ -188,6 +192,8 @@ class Pipeline:
         event: CollectedEvent,
     ) -> None:
         try:
+            # Allow other coroutines to run
+            await asyncio.sleep(0)
             await plugin.forward(ctx=ctx, event=event)
         except Exception:
             log.exception(
