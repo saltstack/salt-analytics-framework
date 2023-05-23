@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import asyncio
 import logging
+from functools import partial
 from typing import TYPE_CHECKING
 from typing import Any
 from typing import AsyncIterator
@@ -102,56 +103,8 @@ class Pipeline:
     async def _run(self: P) -> None:
         self._build_contexts()
         async for event in self._collectors_stream():
-            events_to_process: list[CollectedEvent] = [event]
-            processed_events: list[CollectedEvent] = []
-            if not self.process_configs:
-                # Consider all events to process as processed
-                processed_events.extend(events_to_process)
-                events_to_process.clear()
-            else:
-                # Process the event
-                stop_processing = False
-                for process_config in self.process_configs:
-                    if stop_processing:
-                        break
-                    if not events_to_process:
-                        events_to_process.extend(processed_events)
-                        processed_events.clear()
-                    process_plugin = process_config.loaded_plugin
-                    while events_to_process:
-                        event_to_process = events_to_process.pop(0)
-                        try:
-                            async for processed_event in process_plugin.process(
-                                ctx=self.process_ctxs[process_config.name],
-                                event=event_to_process,
-                            ):
-                                if processed_event is not None:
-                                    processed_events.append(processed_event)
-                        except Exception:
-                            log.exception(
-                                "An exception occurred while processing the event. "
-                                "Stopped processing this event."
-                            )
-                            stop_processing = True
-                            break
-
-            if not processed_events:
-                # The processor(s) did not return any events to forward
-                continue
-
-            # Forward the event
-            coros = []
-            for processed_event in processed_events:
-                for forward_config in self.forward_configs:
-                    forward_plugin = forward_config.loaded_plugin
-                    coros.append(
-                        self._wrap_forwarder_plugin_call(
-                            forward_plugin,
-                            self.forward_ctxs[forward_config.name],
-                            processed_event.copy(),
-                        ),
-                    )
-            await asyncio.gather(*coros)
+            async for processed_event in self._pipe_process_events(event):
+                await self._forward_event(processed_event)
 
     def _build_contexts(self: P) -> None:
         for collect_config in self.collect_configs:
@@ -186,6 +139,47 @@ class Pipeline:
         async with combined.stream() as stream:
             async for event in stream:
                 yield event
+
+    async def _pipe_process_event(
+        self: P,
+        process_config: ProcessConfigBase,
+        event: CollectedEvent,
+    ) -> AsyncIterator[CollectedEvent]:
+        process_plugin = process_config.loaded_plugin
+        async for processed_event in process_plugin.process(
+            ctx=self.process_ctxs[process_config.name], event=event
+        ):
+            if processed_event is not None:
+                yield processed_event
+
+    async def _pipe_process_events(self: P, event: CollectedEvent) -> AsyncIterator[CollectedEvent]:
+        process_configs = list(self.process_configs)
+        process_config = process_configs.pop(0)
+        process = aiostream.stream.chain(self._pipe_process_event(process_config, event))
+        for process_config in process_configs:
+            process |= aiostream.pipe.flatmap(partial(self._pipe_process_event, process_config))
+        if TYPE_CHECKING:
+            assert process
+        async with process.stream() as stream:
+            async for processed_event in stream:
+                if processed_event is not None:
+                    yield processed_event
+
+    async def _forward_event(self: P, event: CollectedEvent) -> None:
+        # Forward the event
+        coros = []
+        for forward_config in self.forward_configs:
+            forward_plugin = forward_config.loaded_plugin
+            coros.append(
+                self._wrap_forwarder_plugin_call(
+                    forward_plugin,
+                    self.forward_ctxs[forward_config.name],
+                    # We pass a copy of the event so that any forwarder get's the
+                    # same event and is free to modify it at will
+                    event.copy(),
+                ),
+            )
+        await asyncio.gather(*coros)
 
     async def _wrap_forwarder_plugin_call(
         self: P,

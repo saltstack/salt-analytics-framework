@@ -10,11 +10,16 @@ from saf.pipeline import Pipeline
 
 
 @pytest.fixture
-def collectors_config():
+def collect_events_count():
+    return 3
+
+
+@pytest.fixture
+def collectors_config(collect_events_count):
     return {
         "test-collector": {
             "plugin": "test",
-            "count": 3,
+            "count": collect_events_count,
             "interval": 0.05,
         },
     }

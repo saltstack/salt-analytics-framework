@@ -7,7 +7,9 @@ It doesn't really do anything to the collected event
 """
 from __future__ import annotations
 
+import asyncio
 import logging
+import random
 import sys
 from typing import AsyncIterator
 from typing import Optional
@@ -27,6 +29,8 @@ class TestProcessConfig(ProcessConfigBase):
     Test collector configuration.
     """
 
+    delay: Optional[float] = Field(None, gt=0)
+    delay_range: Optional[tuple[float, float]] = None
     child_events_count: Optional[int] = Field(None, gt=0, lt=sys.maxsize)
 
 
@@ -47,6 +51,12 @@ async def process(
     """
     config = ctx.config
     log.info("Processing event %r using processor config named %r", event, config.name)
+    if config.delay:
+        await asyncio.sleep(config.delay)
+    elif config.delay_range:
+        await asyncio.sleep(
+            random.uniform(*config.delay_range),  # noqa: S311
+        )
     yield event
     if config.child_events_count:
         log.info(
@@ -56,7 +66,18 @@ async def process(
         )
         counter = 1
         while counter <= config.child_events_count:
-            yield CollectedEvent(data=dict(**event.data, child_count=counter))
+            if config.delay:
+                await asyncio.sleep(config.delay * (config.child_events_count / counter))
+            elif config.delay_range:
+                await asyncio.sleep(
+                    random.uniform(  # noqa: S311
+                        *config.delay_range,
+                    )
+                    * (config.child_events_count / counter),
+                )
+            event_data = dict(**event.data)
+            event_data[f"{config.name}-child-count"] = counter
+            yield CollectedEvent(data=event_data)
             counter += 1
         log.info(
             "Finished generating %d events for processor config named %r",
