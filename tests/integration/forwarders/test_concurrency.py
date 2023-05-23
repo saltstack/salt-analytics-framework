@@ -3,6 +3,7 @@
 #
 from __future__ import annotations
 
+import asyncio
 import pathlib
 
 import pytest
@@ -41,7 +42,7 @@ def forwarders_config(forwarder_dump_path):
         },
         "forwarder-3": {
             "plugin": "test",
-            "sleep": 0.1,
+            "sleep": 0.2,
             "path": forwarder_dump_path,
             "message": "3",
         },
@@ -50,8 +51,18 @@ def forwarders_config(forwarder_dump_path):
 
 @pytest.mark.asyncio
 async def test_pipeline(pipeline, forwarder_dump_path: pathlib.Path):
-    # run the pipeline
-    await pipeline.run()
-    expected_outcome = ["1", "2", "3"]
-    lines = forwarder_dump_path.read_text().splitlines()
-    assert sorted(lines[:3]) == expected_outcome
+    with pipeline:
+        loop = asyncio.get_event_loop()
+        start = loop.time()
+        # run the pipeline
+        await pipeline.run()
+        duration = loop.time() - start
+        # The sum of sleeps of the forwarders, equals 1: 0.5, 0.3, 0.2
+        # Let's just confirm that it takes less than the sum of them all since
+        # that would means the events are serially forwarded
+        assert duration < 1
+        # In fact, it should take just about the maximum sleep plus a tad bit
+        assert duration < 0.75
+        expected_outcome = ["1", "2", "3"]
+        lines = forwarder_dump_path.read_text().splitlines()
+        assert sorted(lines[:3]) == expected_outcome
