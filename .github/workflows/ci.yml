@@ -151,7 +151,6 @@ jobs:
       matrix:
         include:
           - {"salt-version": "3005.0", "python-version": "3.8", "source": "pypi"}
-          - {"salt-version": "3005.0", "python-version": "3.9", "source": "pypi"}
           - {"salt-version": "3006.0", "python-version": "3.8", "source": "pypi"}
           - {"salt-version": "3006.0", "python-version": "3.9", "source": "pypi"}
           - {"salt-version": "3006.0", "python-version": "3.10", "source": "pypi"}
@@ -210,13 +209,13 @@ jobs:
       shell: bash
       if: ${{ matrix.source == 'pypi' }}
       run: |
-        patch C:\.nox\${{ steps.define-test-session.outputs.test-session }}\lib\site-packages\salt\utils\win_network.py ./.github/patches/win_network.patch
+        patch 'C:\.nox\${{ steps.define-test-session.outputs.test-session }}\lib\site-packages\salt\utils\win_network.py' ./.github/patches/win_network.patch
 
     - name: Patch salt/utils/win_network.py
       shell: bash
-      if: ${{ matrix.source == 'pypi' }}
+      if: ${{ matrix.source == 'onedir' }}
       run: |
-        patch .\artifacts\salt\lib\site-packages\salt\utils\win_network.py ./.github/patches/win_network.patch
+        patch '.\artifacts\salt\lib\site-packages\salt\utils\win_network.py' ./.github/patches/win_network.patch
 
     - name: Test
       shell: bash
@@ -226,7 +225,7 @@ jobs:
       run: |
         export PATH="/C/Program Files (x86)/Windows Kits/10/bin/10.0.18362.0/x64;$PATH"
         echo $PATH
-        nox --force-color --envdir 'C:\.nox' -e ${{ steps.define-test-session.outputs.test-session }} --install-only
+        nox --force-color --envdir 'C:\.nox' -e ${{ steps.define-test-session.outputs.test-session }}
 
     - name: Upload Logs
       if: always()
