@@ -191,8 +191,11 @@ jobs:
         echo ${PY_DIR}
         curl https://repo.saltproject.io/windows/dependencies/64/libeay32.dll --output ${PY_DIR}/libeay32.dll
         ls -l ${PY_DIR}
-        which patch.exe
-        patch -h
+
+    - name: Define test session
+      shell: bash
+      id: define-test-session
+      run: echo "test-session=tests-${{ matrix.source == 'onedir' && 'onedir' || '3' }}" >> "$GITHUB_OUTPUT"
 
     - name: Install Test Requirements
       shell: bash
@@ -201,7 +204,19 @@ jobs:
         EXTRA_REQUIREMENTS_INSTALL: Cython
       run: |
         export PATH="/C/Program Files (x86)/Windows Kits/10/bin/10.0.18362.0/x64;$PATH"
-        nox --force-color -e tests-${{ matrix.source == 'onedir' && 'onedir' || '3' }} --install-only
+        nox --force-color --envdir 'C:\.nox' -e ${{ steps.define-test-session.outputs.test-session }} --install-only
+
+    - name: Patch salt/utils/win_network.py
+      shell: bash
+      if: ${{ matrix.source == 'pypi' }}
+      run: |
+        patch C:\.nox\${{ steps.define-test-session.outputs.test-session }}\lib\site-packages\salt\utils\win_network.py ./.github/patches/win_network.patch
+
+    - name: Patch salt/utils/win_network.py
+      shell: bash
+      if: ${{ matrix.source == 'pypi' }}
+      run: |
+        patch .\artifacts\salt\lib\site-packages\salt\utils\win_network.py ./.github/patches/win_network.patch
 
     - name: Test
       shell: bash
@@ -211,7 +226,7 @@ jobs:
       run: |
         export PATH="/C/Program Files (x86)/Windows Kits/10/bin/10.0.18362.0/x64;$PATH"
         echo $PATH
-        nox --force-color -e tests-${{ matrix.source == 'onedir' && 'onedir' || '3' }} -- -vv tests/
+        nox --force-color --envdir 'C:\.nox' -e ${{ steps.define-test-session.outputs.test-session }} --install-only
 
     - name: Upload Logs
       if: always()
