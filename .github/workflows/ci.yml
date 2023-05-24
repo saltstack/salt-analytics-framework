@@ -183,6 +183,7 @@ jobs:
 
     - name: Download libeay32.dll
       shell: bash
+      if: ${{ matrix.python-version == '3.8' && startswith('3005', matrix.salt-version) }}
       run: |
         export PY_LOC=$(which python.exe)
         echo ${PY_LOC}
@@ -207,13 +208,13 @@ jobs:
 
     - name: Patch salt/utils/win_network.py
       shell: bash
-      if: ${{ matrix.source == 'pypi' }}
+      if: ${{ matrix.source == 'pypi' && startswith('3006', matrix.salt-version) }}
       run: |
         patch 'C:\.nox\${{ steps.define-test-session.outputs.test-session }}\lib\site-packages\salt\utils\win_network.py' ./.github/patches/win_network.patch
 
     - name: Patch salt/utils/win_network.py
       shell: bash
-      if: ${{ matrix.source == 'onedir' }}
+      if: ${{ matrix.source == 'onedir' && startswith('3006', matrix.salt-version) }}
       run: |
         patch '.\artifacts\salt\lib\site-packages\salt\utils\win_network.py' ./.github/patches/win_network.patch
 
