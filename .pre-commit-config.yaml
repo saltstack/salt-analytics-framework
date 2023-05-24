@@ -100,7 +100,7 @@ repos:
     hooks:
       - id: mypy
         name: Run mypy against the code base
-        files: ^(src/|tests/).*\.py$
+        files: ^(src/|tests/|examples/).*\.py$
         args: []
         additional_dependencies:
           - types-attrs
