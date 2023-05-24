@@ -210,7 +210,11 @@ jobs:
       shell: bash
       if: ${{ matrix.source == 'pypi' && startswith('3006', matrix.salt-version) }}
       run: |
-        patch 'C:\.nox\${{ steps.define-test-session.outputs.test-session }}\lib\site-packages\salt\utils\win_network.py' ./.github/patches/win_network.patch
+        if [ "${{ matrix.source }}" == "pypi" ]; then
+          patch 'C:\.nox\${{ steps.define-test-session.outputs.test-session }}\lib\site-packages\salt\utils\win_network.py' ./.github/patches/win_network.patch
+        else
+          patch '.\artifacts\salt\lib\site-packages\salt\utils\win_network.py' ./.github/patches/win_network.patch
+        fi
 
     - name: Patch salt/utils/win_network.py
       shell: bash
