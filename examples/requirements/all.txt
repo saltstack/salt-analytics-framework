@@ -1,1 +1,2 @@
 -r mnist-notebook.txt
+-r mnist.txt
