@@ -86,6 +86,7 @@ For more detailed information, refer to `CONTRIBUTING`_.
 .. _salt: https://github.com/saltstack/salt
 .. _engine: https://docs.saltproject.io/en/latest/topics/engines/index.html
 .. _CONTRIBUTING: https://github.com/saltstack/salt-analytics-framework/blob/main/CONTRIBUTING.md
+.. _examples: https://github.com/saltstack/salt-analytics-framework/blob/main/examples
 
 ..
    include-ends-here
@@ -94,3 +95,9 @@ Documentation
 =============
 
 The full documentation can be seen `here <https://salt-analytics-framework.readthedocs.io>`_.
+
+
+Examples
+========
+
+Some examples of custom pipelines are provided.  You can find them at `examples`_.
