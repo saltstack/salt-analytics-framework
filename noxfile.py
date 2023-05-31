@@ -222,7 +222,7 @@ def _tests(session, onedir=False):
             args.append("tests/")
 
     if not install_examples:
-        args.append(f"--ignore-glob=**{os.sep}examples{os.sep}*")
+        args.append(rf"--ignore-glob=**{os.sep}examples{os.sep}*")
     try:
         session.run("coverage", "run", "-m", "pytest", *args, env=env)
     finally:
