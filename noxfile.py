@@ -63,6 +63,8 @@ COVERAGE_REPORT_DB = REPO_ROOT / ".coverage"
 COVERAGE_REPORT_PROJECT = ARTIFACTS_DIR.relative_to(REPO_ROOT) / "coverage-project.xml"
 COVERAGE_REPORT_TESTS = ARTIFACTS_DIR.relative_to(REPO_ROOT) / "coverage-tests.xml"
 JUNIT_REPORT = ARTIFACTS_DIR.relative_to(REPO_ROOT) / "junit-report.xml"
+EXAMPLES_EXTENSION_DIR = REPO_ROOT / "examples"
+EXAMPLES_EXTENSION_TESTS_DIR = REPO_ROOT / "tests" / "examples"
 
 
 def _get_session_python_version_info(session):
@@ -96,6 +98,7 @@ def _install_requirements(
     install_source=False,
     install_salt=True,
     install_extras=None,
+    install_examples=True,
     onedir=False,
 ):
     install_extras = install_extras or []
@@ -128,6 +131,17 @@ def _install_requirements(
         if passed_requirements:
             session.install("--progress-bar=off", *passed_requirements, silent=PIP_INSTALL_SILENT)
 
+        if install_examples:
+            session.install(
+                "--progress-bar=off",
+                "-r",
+                f"{EXAMPLES_EXTENSION_DIR / 'requirements' / 'all.txt'}",
+                silent=PIP_INSTALL_SILENT,
+            )
+            session.install(
+                "--progress-bar=off", f"{EXAMPLES_EXTENSION_DIR}", silent=PIP_INSTALL_SILENT
+            )
+
         if install_source:
             pkg = "."
             if install_extras:
@@ -143,7 +157,12 @@ def _install_requirements(
 
 
 def _tests(session, onedir=False):
-    _install_requirements(session, install_source=True, onedir=onedir)
+    install_examples = "--no-examples" not in session.posargs
+    if not install_examples:
+        session.posargs.remove("--no-examples")
+    _install_requirements(
+        session, install_source=True, onedir=onedir, install_examples=install_examples
+    )
 
     sitecustomize_dir = session.run("salt-factories", "--coverage", silent=True, log=False)
     python_path_env_var = os.environ.get("PYTHONPATH") or None
@@ -201,6 +220,9 @@ def _tests(session, onedir=False):
                 continue
         else:
             args.append("tests/")
+
+    if not install_examples:
+        args.append(f"--ignore-glob=**{os.sep}examples{os.sep}*")
     try:
         session.run("coverage", "run", "-m", "pytest", *args, env=env)
     finally:

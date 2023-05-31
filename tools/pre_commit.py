@@ -7,6 +7,7 @@ These commands are used by pre-commit.
 from __future__ import annotations
 
 import logging
+import pathlib
 import shutil
 
 from ptscripts import Context
@@ -16,6 +17,37 @@ log = logging.getLogger(__name__)
 
 # Define the command group
 cgroup = command_group(name="pre-commit", help="Pre-Commit Related Commands", description=__doc__)
+
+
+@cgroup.command(
+    name="examples-requirements",
+    arguments={
+        "files": {
+            "help": "Files to consider when compiling all.txt",
+            "nargs": "*",
+        },
+    },
+)
+def examples_requirements(ctx: Context, files: list[pathlib.Path]):
+    """
+    Include all individual examples requirements files in `all.txt`.
+    """
+    all_file = (
+        pathlib.Path(__file__).resolve().parent.parent / "examples" / "requirements" / "all.txt"
+    )
+    includes = []
+    files = [pathlib.Path(file) for file in files]
+    for file in files:
+        if file.name != "all.txt":
+            includes.append(f"-r {file.name}")
+    includes.append("")
+
+    with all_file.open("r") as rfh:
+        original_contents = [line.strip() for line in rfh.readlines()]
+
+    if original_contents != includes:
+        all_file.write_text("\n".join(includes))
+        ctx.error(f"Modified {all_file}")
 
 
 @cgroup.command(

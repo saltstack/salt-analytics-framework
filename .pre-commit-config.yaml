@@ -69,6 +69,13 @@ repos:
           - pyyaml==6.0
           - jinja2==3.1.2
           - packaging==23.0
+      - id: tools
+        alias: examples-requirements
+        name: Collect examples requirements
+        files: "^examples/requirements/"
+        args:
+          - pre-commit
+          - examples-requirements
 
   # ----- Code Formatting and Analysis ---------------------------------------------------------->
   - repo: https://github.com/charliermarsh/ruff-pre-commit
