@@ -156,13 +156,8 @@ def _install_requirements(
             session.install("--progress-bar=off", pkg, silent=PIP_INSTALL_SILENT)
 
 
-def _tests(session, onedir=False):
-    install_examples = "--no-examples" not in session.posargs
-    if not install_examples:
-        session.posargs.remove("--no-examples")
-    _install_requirements(
-        session, install_source=True, onedir=onedir, install_examples=install_examples
-    )
+def _tests(session, onedir=False, examples=False):
+    _install_requirements(session, install_source=True, onedir=onedir, install_examples=examples)
 
     sitecustomize_dir = session.run("salt-factories", "--coverage", silent=True, log=False)
     python_path_env_var = os.environ.get("PYTHONPATH") or None
@@ -201,8 +196,9 @@ def _tests(session, onedir=False):
     ]
     if session._runner.global_config.forcecolor:
         args.append("--color=yes")
+    tests_root = pathlib.Path("examples", "tests") if examples else pathlib.Path("tests")
     if not session.posargs:
-        args.append("tests/")
+        args.append(str(tests_root))
     else:
         for arg in session.posargs:
             if arg.startswith("--color") and args[0].startswith("--color"):
@@ -211,25 +207,22 @@ def _tests(session, onedir=False):
         for arg in session.posargs:
             if arg.startswith("-"):
                 continue
-            if arg.startswith(f"tests{os.sep}"):
+            if arg.startswith(str(tests_root)):
                 break
             try:
-                pathlib.Path(arg).resolve().relative_to(REPO_ROOT / "tests")
+                pathlib.Path(arg).resolve().relative_to(REPO_ROOT / tests_root)
                 break
             except ValueError:
                 continue
         else:
-            args.append("tests/")
+            args.append(tests_root)
 
-    if not install_examples:
-        args.append(rf"--ignore-glob=**{os.sep}examples{os.sep}*")
     try:
         session.run("coverage", "run", "-m", "pytest", *args, env=env)
     finally:
         # Always combine and generate the XML coverage report
         with contextlib.suppress(CommandFailed):
             session.run("coverage", "combine")
-
         try:
             # Generate report for salt code coverage
             session.run(
@@ -265,7 +258,7 @@ def _tests(session, onedir=False):
                     )
         except CommandFailed as exc:
             # Tracking code coverage is still not working that well
-            if onedir is False:
+            if onedir is False and examples is False:
                 raise exc from None
 
 
@@ -288,6 +281,27 @@ def test_onedir(session):
         )
 
     _tests(session, onedir=True)
+
+
+@nox.session(python=PYTHON_VERSIONS, name="tests-examples")
+def tests_examples(session):
+    _tests(session, onedir=False, examples=True)
+
+
+@nox.session(
+    python=str(ONEDIR_PYTHON_PATH),
+    name="tests-examples-onedir",
+    venv_params=["--system-site-packages"],
+)
+def test_onedir_examples(session):
+    if not ONEDIR_ARTIFACT_PATH.exists():
+        session.error(
+            "The salt onedir artifact, expected to be in '{}', was not found".format(
+                ONEDIR_ARTIFACT_PATH.relative_to(REPO_ROOT)
+            )
+        )
+
+    _tests(session, onedir=True, examples=True)
 
 
 class Tee:
