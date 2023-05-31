@@ -136,7 +136,7 @@ jobs:
         SALT_REQUIREMENT: salt~=${{ matrix.salt-version }}
         SKIP_REQUIREMENTS_INSTALL: YES
       run: |
-        nox --force-color -e tests${{ matrix.examples && '-examples' || '' }}-${{ matrix.source == 'onedir' && 'onedir' || '3' }} -- -vv tests/
+        nox --force-color -e tests${{ matrix.examples && '-examples' || '' }}-${{ matrix.source == 'onedir' && 'onedir' || '3' }} -- -vv
 
     - name: Upload Logs
       if: always()
@@ -302,7 +302,7 @@ jobs:
         SALT_REQUIREMENT: salt~=${{ matrix.salt-version }}
         SKIP_REQUIREMENTS_INSTALL: YES
       run: |
-        nox --force-color -e tests${{ matrix.examples && '-examples' || '' }}-${{ matrix.source == 'onedir' && 'onedir' || '3' }} -- -vv tests/
+        nox --force-color -e tests${{ matrix.examples && '-examples' || '' }}-${{ matrix.source == 'onedir' && 'onedir' || '3' }} -- -vv
 
     - name: Upload Logs
       if: always()
