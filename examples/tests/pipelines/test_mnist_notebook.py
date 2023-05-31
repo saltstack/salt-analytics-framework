@@ -15,6 +15,9 @@ from saf.models import CollectedEvent
 log = logging.getLogger(__name__)
 
 
+pytestmark = [pytest.mark.skip_on_windows]
+
+
 @pytest.fixture(scope="module")
 def analytics_config_contents(analytics_events_dump_directory) -> str:
     return """
