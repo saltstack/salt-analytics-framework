@@ -64,6 +64,7 @@ src = [
 ]
 extend-exclude = [
   ".nox/**",
+  "examples/pipelines/**",
 ]
 extend-include = [
   "setup.py",
