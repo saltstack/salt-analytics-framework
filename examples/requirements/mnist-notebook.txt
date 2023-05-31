@@ -1,0 +1,3 @@
+papermill
+ipykernel
+importlib-metadata>=5.0.0

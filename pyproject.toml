@@ -95,6 +95,10 @@ format = "grouped"
   "D104",   # Missing docstring in public package
   "D107",   # Missing docstring in `__init__`
 ]
+"examples/src/**/*.py" = [
+  "D104",   # Missing docstring in public package
+  "D107",   # Missing docstring in `__init__`
+]
 "src/**/*.pyi" = [
   "D100",   # Missing docstring in public module
 ]
