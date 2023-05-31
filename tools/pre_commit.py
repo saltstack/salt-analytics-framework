@@ -32,22 +32,24 @@ def examples_requirements(ctx: Context, files: list[pathlib.Path]):
     """
     Include all individual examples requirements files in `all.txt`.
     """
-    all_file = (
-        pathlib.Path(__file__).resolve().parent.parent / "examples" / "requirements" / "all.txt"
-    )
-    includes = []
-    files = [pathlib.Path(file) for file in files]
-    for file in files:
-        if file.name != "all.txt":
-            includes.append(f"-r {file.name}")
-    includes.append("")
+    if files:
+        examples_requirements_dir = (
+            pathlib.Path(__file__).resolve().parent.parent / "examples" / "requirements"
+        )
+        includes = []
+        for file in examples_requirements_dir.iterdir():
+            if file.name != "all.txt":
+                includes.append(f"-r {file.name}")
 
-    with all_file.open("r") as rfh:
-        original_contents = [line.strip() for line in rfh.readlines()]
+        all_file = examples_requirements_dir / "all.txt"
 
-    if original_contents != includes:
-        all_file.write_text("\n".join(includes))
-        ctx.error(f"Modified {all_file}")
+        with all_file.open("r") as rfh:
+            original_contents = [line.strip() for line in rfh.readlines()]
+
+        if original_contents != includes:
+            includes.append("")
+            all_file.write_text("\n".join(includes))
+            ctx.error(f"Modified {all_file}")
 
 
 @cgroup.command(
