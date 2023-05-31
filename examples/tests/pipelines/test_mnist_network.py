@@ -25,44 +25,24 @@ def analytics_config_contents(analytics_events_dump_directory) -> str:
         path: {}
 
     processors:
-      numpy-save-keys-processor:
-        plugin: numpy_save_keys
-        base_path: {}
-
-      jupyter-notebook-processor:
-        plugin: jupyter_notebook
-        notebook: {}
-        output_notebook: {}
-        params:
-          model_path: {}
-        input_keys:
-          - x_path
-          - y_path
-        output_tag: output
-
-      notebook-output-processor:
-        plugin: notebook_output
+      mnist-network-processor:
+        plugin: mnist_network
+        model: {}
 
     forwarders:
       disk-forwarder:
         plugin: disk
         path: {}
-        filename: mnist-notebook-dump
+        filename: mnist-network-dump
         pretty_print: False
 
     pipelines:
       my-pipeline:
         collect: mnist-digits-collector
-        process:
-          - numpy-save-keys-processor
-          - jupyter-notebook-processor
-          - notebook-output-processor
+        process: mnist-network-processor
         forward: disk-forwarder
     """.format(
         analytics_events_dump_directory / "mnist_digits",
-        analytics_events_dump_directory,
-        pathlib.Path(__file__).resolve().parent / "files" / "mnist_saf.ipynb",
-        analytics_events_dump_directory / "mnist_saf.out.ipynb",
         pathlib.Path(__file__).resolve().parent / "files" / "mnist",
         analytics_events_dump_directory,
     )
@@ -70,10 +50,10 @@ def analytics_config_contents(analytics_events_dump_directory) -> str:
 
 def test_pipeline(analytics_events_dump_directory: pathlib.Path):
     """
-    Test output of the MNIST digits network (inside a Jupyter notebook) being dumped to disk.
+    Test output of the MNIST digits network being dumped to disk.
     """
-    timeout = 120
-    dumpfile = analytics_events_dump_directory / "mnist-notebook-dump"
+    timeout = 300
+    dumpfile = analytics_events_dump_directory / "mnist-network-dump"
 
     while timeout:
         time.sleep(1)
