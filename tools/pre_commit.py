@@ -46,7 +46,7 @@ def examples_requirements(ctx: Context, files: list[pathlib.Path]):
         with all_file.open("r") as rfh:
             original_contents = [line.strip() for line in rfh.readlines()]
 
-        if original_contents != includes:
+        if set(original_contents) != set(includes):
             includes.append("")
             all_file.write_text("\n".join(includes))
             ctx.error(f"Modified {all_file}")
