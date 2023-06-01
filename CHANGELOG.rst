@@ -14,6 +14,39 @@ Backward incompatible (breaking) changes will only be introduced in major versio
 .. towncrier release notes start
 
 
+0.5.0 (2023-06-01)
+==================
+
+Features
+--------
+
+- `#54 <https://github.com/saltstack/pytest-skip-markers/issues/54>`_: Add a Jupyter notebook processor that allows running parameterized notebooks using `papermill`
+
+
+
+Improvements
+------------
+
+- `#46 <https://github.com/saltstack/pytest-skip-markers/issues/46>`_: Allow multiple collectors to feed data into the processors chain
+
+- `#47 <https://github.com/saltstack/pytest-skip-markers/issues/47>`_: Forwarders always run concurrently now
+
+- `#48 <https://github.com/saltstack/pytest-skip-markers/issues/48>`_: Create a test event collector(generator)
+
+- `#49 <https://github.com/saltstack/pytest-skip-markers/issues/49>`_: Turn the `noop` processor into the `test` event processor(generator)
+
+- `#50 <https://github.com/saltstack/pytest-skip-markers/issues/50>`_: Allow defining if a pipeline should restart or not when it ends or when it fails during processing.
+
+- `#52 <https://github.com/saltstack/pytest-skip-markers/issues/52>`_: Chain processors asynchronously
+
+
+
+Trivial/Internal Changes
+------------------------
+
+- `#47 <https://github.com/saltstack/pytest-skip-markers/issues/47>`_: Add a timed test case to verify concurrency
+
+
 0.4.0 (2023-05-18)
 ==================
 

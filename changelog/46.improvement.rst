@@ -1,1 +1,0 @@
-Allow multiple collectors to feed data into the processors chain

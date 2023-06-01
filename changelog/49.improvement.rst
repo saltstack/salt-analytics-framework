@@ -1,1 +1,0 @@
-Turn the `noop` processor into the `test` event processor(generator)
