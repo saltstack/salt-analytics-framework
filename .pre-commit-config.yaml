@@ -108,7 +108,7 @@ repos:
       - id: mypy
         name: Run mypy against the code base
         files: ^(src/|tests/|examples/).*\.py$
-        args: [--explicit-package-bases]
+        args: []
         additional_dependencies:
           - types-attrs
           - types-setuptools
