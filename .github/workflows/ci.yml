@@ -85,22 +85,22 @@ jobs:
       max-parallel: 10
       matrix:
         include:
-          - {"salt-version": "3005.0", "python-version": "3.7", "examples": false, "source": "pypi"}
-          - {"salt-version": "3005.0", "python-version": "3.7", "examples": true, "source": "pypi"}
-          - {"salt-version": "3005.0", "python-version": "3.8", "examples": false, "source": "pypi"}
-          - {"salt-version": "3005.0", "python-version": "3.8", "examples": true, "source": "pypi"}
-          - {"salt-version": "3005.0", "python-version": "3.9", "examples": false, "source": "pypi"}
-          - {"salt-version": "3005.0", "python-version": "3.9", "examples": true, "source": "pypi"}
-          - {"salt-version": "3006.0", "python-version": "3.7", "examples": false, "source": "pypi"}
-          - {"salt-version": "3006.0", "python-version": "3.7", "examples": true, "source": "pypi"}
-          - {"salt-version": "3006.0", "python-version": "3.8", "examples": false, "source": "pypi"}
-          - {"salt-version": "3006.0", "python-version": "3.8", "examples": true, "source": "pypi"}
-          - {"salt-version": "3006.0", "python-version": "3.9", "examples": false, "source": "pypi"}
-          - {"salt-version": "3006.0", "python-version": "3.9", "examples": true, "source": "pypi"}
-          - {"salt-version": "3006.0", "python-version": "3.10", "examples": false, "source": "pypi"}
-          - {"salt-version": "3006.0", "python-version": "3.10", "examples": true, "source": "pypi"}
-          - {"salt-version": "3006.x", "python-version": "3.10", "examples": false, "source": "onedir"}
-          - {"salt-version": "3006.x", "python-version": "3.10", "examples": true, "source": "onedir"}
+          - {"salt-version": "3005.0", "python-version": "3.7", "testsuite": "core", "source": "pypi"}
+          - {"salt-version": "3005.0", "python-version": "3.7", "testsuite": "examples", "source": "pypi"}
+          - {"salt-version": "3005.0", "python-version": "3.8", "testsuite": "core", "source": "pypi"}
+          - {"salt-version": "3005.0", "python-version": "3.8", "testsuite": "examples", "source": "pypi"}
+          - {"salt-version": "3005.0", "python-version": "3.9", "testsuite": "core", "source": "pypi"}
+          - {"salt-version": "3005.0", "python-version": "3.9", "testsuite": "examples", "source": "pypi"}
+          - {"salt-version": "3006.0", "python-version": "3.7", "testsuite": "core", "source": "pypi"}
+          - {"salt-version": "3006.0", "python-version": "3.7", "testsuite": "examples", "source": "pypi"}
+          - {"salt-version": "3006.0", "python-version": "3.8", "testsuite": "core", "source": "pypi"}
+          - {"salt-version": "3006.0", "python-version": "3.8", "testsuite": "examples", "source": "pypi"}
+          - {"salt-version": "3006.0", "python-version": "3.9", "testsuite": "core", "source": "pypi"}
+          - {"salt-version": "3006.0", "python-version": "3.9", "testsuite": "examples", "source": "pypi"}
+          - {"salt-version": "3006.0", "python-version": "3.10", "testsuite": "core", "source": "pypi"}
+          - {"salt-version": "3006.0", "python-version": "3.10", "testsuite": "examples", "source": "pypi"}
+          - {"salt-version": "3006.x", "python-version": "3.10", "testsuite": "core", "source": "onedir"}
+          - {"salt-version": "3006.x", "python-version": "3.10", "testsuite": "examples", "source": "onedir"}
 
     steps:
     - uses: actions/checkout@v3
@@ -129,20 +129,20 @@ jobs:
       env:
         SALT_REQUIREMENT: salt~=${{ matrix.salt-version }}
       run: |
-        nox --force-color -e tests${{ matrix.examples && '-examples' || '' }}-${{ matrix.source == 'onedir' && 'onedir' || '3' }} --install-only
+        nox --force-color -e tests${{ matrix.testsuite == 'examples' && '-examples' || '' }}-${{ matrix.source == 'onedir' && 'onedir' || '3' }} --install-only
 
     - name: Test
       env:
         SALT_REQUIREMENT: salt~=${{ matrix.salt-version }}
         SKIP_REQUIREMENTS_INSTALL: YES
       run: |
-        nox --force-color -e tests${{ matrix.examples && '-examples' || '' }}-${{ matrix.source == 'onedir' && 'onedir' || '3' }} -- -vv
+        nox --force-color -e tests${{ matrix.testsuite == 'examples' && '-examples' || '' }}-${{ matrix.source == 'onedir' && 'onedir' || '3' }} -- -vv
 
     - name: Upload Logs
       if: always()
       uses: actions/upload-artifact@main
       with:
-        name: runtests-${{ runner.os }}-${{ matrix.python-version }}-salt-${{ matrix.salt-version }}-${{ matrix.source }}${{ matrix.examples && '-examples' || '' }}.log
+        name: runtests-${{ runner.os }}-${{ matrix.python-version }}-salt-${{ matrix.salt-version }}-${{ matrix.source }}${{ matrix.testsuite == 'examples' && '-examples' || '' }}.log
         path: artifacts/runtests-*.log
 
 
@@ -158,16 +158,16 @@ jobs:
       max-parallel: 10
       matrix:
         include:
-          - {"salt-version": "3005.0", "python-version": "3.8", "examples": false, "source": "pypi"}
-          - {"salt-version": "3005.0", "python-version": "3.8", "examples": true, "source": "pypi"}
-          - {"salt-version": "3006.0", "python-version": "3.8", "examples": false, "source": "pypi"}
-          - {"salt-version": "3006.0", "python-version": "3.8", "examples": true, "source": "pypi"}
-          - {"salt-version": "3006.0", "python-version": "3.9", "examples": false, "source": "pypi"}
-          - {"salt-version": "3006.0", "python-version": "3.9", "examples": true, "source": "pypi"}
-          - {"salt-version": "3006.0", "python-version": "3.10", "examples": false, "source": "pypi"}
-          - {"salt-version": "3006.0", "python-version": "3.10", "examples": true, "source": "pypi"}
-          - {"salt-version": "3006.x", "python-version": "3.10", "examples": false, "source": "onedir"}
-          - {"salt-version": "3006.x", "python-version": "3.10", "examples": true, "source": "onedir"}
+          - {"salt-version": "3005.0", "python-version": "3.8", "testsuite": "core", "source": "pypi"}
+          - {"salt-version": "3005.0", "python-version": "3.8", "testsuite": "examples", "source": "pypi"}
+          - {"salt-version": "3006.0", "python-version": "3.8", "testsuite": "core", "source": "pypi"}
+          - {"salt-version": "3006.0", "python-version": "3.8", "testsuite": "examples", "source": "pypi"}
+          - {"salt-version": "3006.0", "python-version": "3.9", "testsuite": "core", "source": "pypi"}
+          - {"salt-version": "3006.0", "python-version": "3.9", "testsuite": "examples", "source": "pypi"}
+          - {"salt-version": "3006.0", "python-version": "3.10", "testsuite": "core", "source": "pypi"}
+          - {"salt-version": "3006.0", "python-version": "3.10", "testsuite": "examples", "source": "pypi"}
+          - {"salt-version": "3006.x", "python-version": "3.10", "testsuite": "core", "source": "onedir"}
+          - {"salt-version": "3006.x", "python-version": "3.10", "testsuite": "examples", "source": "onedir"}
 
     steps:
     - uses: actions/checkout@v3
@@ -208,7 +208,7 @@ jobs:
     - name: Define test session
       shell: bash
       id: define-test-session
-      run: echo "test-session=tests${{ matrix.examples && '-examples' || '' }}-${{ matrix.source == 'onedir' && 'onedir' || '3' }}" >> "$GITHUB_OUTPUT"
+      run: echo "test-session=tests${{ matrix.testsuite == 'examples' && '-examples' || '' }}-${{ matrix.source == 'onedir' && 'onedir' || '3' }}" >> "$GITHUB_OUTPUT"
 
     - name: Install Test Requirements
       shell: bash
@@ -243,7 +243,7 @@ jobs:
       if: always()
       uses: actions/upload-artifact@main
       with:
-        name: runtests-${{ runner.os }}-${{ matrix.python-version }}-salt-${{ matrix.salt-version }}-${{ matrix.source }}${{ matrix.examples && '-examples' || '' }}.log
+        name: runtests-${{ runner.os }}-${{ matrix.python-version }}-salt-${{ matrix.salt-version }}-${{ matrix.source }}${{ matrix.testsuite == 'examples' && '-examples' || '' }}.log
         path: artifacts/runtests-*.log
 
 
@@ -259,14 +259,14 @@ jobs:
       max-parallel: 6
       matrix:
         include:
-          - {"salt-version": "3005.0", "python-version": "3.9", "examples": false, "source": "pypi"}
-          - {"salt-version": "3005.0", "python-version": "3.9", "examples": true, "source": "pypi"}
-          - {"salt-version": "3006.0", "python-version": "3.9", "examples": false, "source": "pypi"}
-          - {"salt-version": "3006.0", "python-version": "3.9", "examples": true, "source": "pypi"}
-          - {"salt-version": "3006.0", "python-version": "3.10", "examples": false, "source": "pypi"}
-          - {"salt-version": "3006.0", "python-version": "3.10", "examples": true, "source": "pypi"}
-          - {"salt-version": "3006.x", "python-version": "3.10", "examples": false, "source": "onedir"}
-          - {"salt-version": "3006.x", "python-version": "3.10", "examples": true, "source": "onedir"}
+          - {"salt-version": "3005.0", "python-version": "3.9", "testsuite": "core", "source": "pypi"}
+          - {"salt-version": "3005.0", "python-version": "3.9", "testsuite": "examples", "source": "pypi"}
+          - {"salt-version": "3006.0", "python-version": "3.9", "testsuite": "core", "source": "pypi"}
+          - {"salt-version": "3006.0", "python-version": "3.9", "testsuite": "examples", "source": "pypi"}
+          - {"salt-version": "3006.0", "python-version": "3.10", "testsuite": "core", "source": "pypi"}
+          - {"salt-version": "3006.0", "python-version": "3.10", "testsuite": "examples", "source": "pypi"}
+          - {"salt-version": "3006.x", "python-version": "3.10", "testsuite": "core", "source": "onedir"}
+          - {"salt-version": "3006.x", "python-version": "3.10", "testsuite": "examples", "source": "onedir"}
 
     steps:
     - uses: actions/checkout@v3
@@ -295,20 +295,20 @@ jobs:
       env:
         SALT_REQUIREMENT: salt~=${{ matrix.salt-version }}
       run: |
-        nox --force-color -e tests${{ matrix.examples && '-examples' || '' }}-${{ matrix.source == 'onedir' && 'onedir' || '3' }} --install-only
+        nox --force-color -e tests${{ matrix.testsuite == 'examples' && '-examples' || '' }}-${{ matrix.source == 'onedir' && 'onedir' || '3' }} --install-only
 
     - name: Test
       env:
         SALT_REQUIREMENT: salt~=${{ matrix.salt-version }}
         SKIP_REQUIREMENTS_INSTALL: YES
       run: |
-        nox --force-color -e tests${{ matrix.examples && '-examples' || '' }}-${{ matrix.source == 'onedir' && 'onedir' || '3' }} -- -vv
+        nox --force-color -e tests${{ matrix.testsuite == 'examples' && '-examples' || '' }}-${{ matrix.source == 'onedir' && 'onedir' || '3' }} -- -vv
 
     - name: Upload Logs
       if: always()
       uses: actions/upload-artifact@main
       with:
-        name: runtests-${{ runner.os }}-${{ matrix.python-version }}-salt-${{ matrix.salt-version }}-${{ matrix.source }}${{ matrix.examples && '-examples' || '' }}.log
+        name: runtests-${{ runner.os }}-${{ matrix.python-version }}-salt-${{ matrix.salt-version }}-${{ matrix.source }}${{ matrix.testsuite == 'examples' && '-examples' || '' }}.log
         path: artifacts/runtests-*.log
 
   build:
