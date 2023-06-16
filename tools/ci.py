@@ -14,11 +14,12 @@ import shutil
 import sys
 import tempfile
 
-from ptscripts import CWD
 from ptscripts import Context
 from ptscripts import command_group
 
 log = logging.getLogger(__name__)
+
+REPO_ROOT = pathlib.Path(__file__).parent.parent
 
 # Define the command group
 cgroup = command_group(name="ci", help="CI Related Commands", description=__doc__)
@@ -70,7 +71,7 @@ def download_onedir(
             )
             ctx.exit(1)
 
-    artifacts_path = CWD / "artifacts"
+    artifacts_path = REPO_ROOT / "artifacts"
     artifacts_path.mkdir(exist_ok=True)
     if artifacts_path.joinpath("salt").exists():
         ctx.error("The 'artifacts/salt' directory already exists ...")
