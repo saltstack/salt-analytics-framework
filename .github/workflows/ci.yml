@@ -198,12 +198,14 @@ jobs:
       shell: bash
       if: ${{ matrix.python-version == '3.8' && startswith(matrix.salt-version, '3005') }}
       run: |
-        export PY_LOC=$(which python.exe)
-        echo ${PY_LOC}
-        export PY_DIR=$(dirname ${PY_LOC})
-        echo ${PY_DIR}
-        curl https://repo.saltproject.io/windows/dependencies/64/libeay32.dll --output ${PY_DIR}/libeay32.dll
-        ls -l ${PY_DIR}
+        PY_LOC=$(which python.exe)
+        export PY_LOC
+        echo "${PY_LOC}"
+        PY_DIR=$(dirname "${PY_LOC}")
+        export PY_DIR
+        echo "${PY_DIR}"
+        curl https://repo.saltproject.io/windows/dependencies/64/libeay32.dll --output "${PY_DIR}/libeay32.dll"
+        ls -l "${PY_DIR}"
 
     - name: Define test session
       shell: bash
@@ -236,7 +238,7 @@ jobs:
         SKIP_REQUIREMENTS_INSTALL: YES
       run: |
         export PATH="/C/Program Files (x86)/Windows Kits/10/bin/10.0.18362.0/x64;$PATH"
-        echo $PATH
+        echo "$PATH"
         nox --force-color --envdir 'C:\.nox' -e ${{ steps.define-test-session.outputs.test-session }}
 
     - name: Upload Logs
@@ -384,3 +386,36 @@ jobs:
       uses: pypa/gh-action-pypi-publish@v1.8.6
       with:
         print-hash: true
+
+  set-pipeline-exit-status:
+    # This step is just so we can make github require this step, to pass checks
+    # on a pull request instead of requiring all
+    name: Set the ${{ github.workflow }} Pipeline Exit Status
+    if: always()
+    runs-on: ubuntu-latest
+    needs:
+      - pre-commit
+      - docs
+      - linux
+      - windows
+      - macos
+      - build
+      - release
+    steps:
+      - name: Get workflow information
+        id: get-workflow-info
+        uses: technote-space/workflow-conclusion-action@v3
+
+      - name: Set Pipeline Exit Status
+        shell: bash
+        run: |
+          if [ "${{ steps.get-workflow-info.outputs.conclusion }}" != "success" ]; then
+            exit 1
+          else
+            exit 0
+          fi
+
+      - name: Done
+        if: always()
+        run:
+          echo "All worflows finished"

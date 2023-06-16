@@ -1,0 +1,1 @@
+Define a last CI job which set's the whole pipeline exit status.
