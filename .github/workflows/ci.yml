@@ -105,6 +105,11 @@ jobs:
           - {"salt-version": "3006.0", "python-version": "3.10", "testsuite": "examples", "source": "pypi"}
           - {"salt-version": "3006.x", "python-version": "3.10", "testsuite": "core", "source": "onedir"}
           - {"salt-version": "3006.x", "python-version": "3.10", "testsuite": "examples", "source": "onedir"}
+    env:
+      PYTHON: ${{ matrix.python-version }}
+      SALT: ${{ matrix.salt-version }}
+      TESTSUITE: ${{ matrix.testsuite }}
+      SOURCE: ${{ matrix.source }}
 
     steps:
     - uses: actions/checkout@v3
@@ -149,6 +154,30 @@ jobs:
         name: runtests-${{ runner.os }}-${{ matrix.python-version }}-salt-${{ matrix.salt-version }}-${{ matrix.source }}${{ matrix.testsuite == 'examples' && '-examples' || '' }}.log
         path: artifacts/runtests-*.log
 
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v3
+      with:
+        token: ${{ secrets.CODECOV_TOKEN }}
+        directory: artifacts/
+        env_vars: PYTHON,SALT,TESTSUITE,SOURCE
+        fail_ci_if_error: true
+        files: coverage-project.xml
+        flags: src,${{ runner.os }},${{ matrix.testsuite }}
+        name: project-${{ runner.os }}-salt-${{ matrix.salt-version }}-Py${{ matrix.python-version}}-${{ matrix.testsuite }}-${{ matrix.source }}
+        verbose: true
+
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v3
+      with:
+        token: ${{ secrets.CODECOV_TOKEN }}
+        directory: artifacts/
+        env_vars: PYTHON,SALT,TESTSUITE,SOURCE
+        fail_ci_if_error: true
+        files: coverage-tests.xml
+        flags: tests,${{ runner.os }},${{ matrix.testsuite }}
+        name: tests-${{ runner.os }}-salt-${{ matrix.salt-version }}-Py${{ matrix.python-version}}-${{ matrix.testsuite }}-${{ matrix.source }}
+        verbose: true
+
 
   windows:
     name: Windows
@@ -172,6 +201,11 @@ jobs:
           - {"salt-version": "3006.0", "python-version": "3.10", "testsuite": "examples", "source": "pypi"}
           - {"salt-version": "3006.x", "python-version": "3.10", "testsuite": "core", "source": "onedir"}
           - {"salt-version": "3006.x", "python-version": "3.10", "testsuite": "examples", "source": "onedir"}
+    env:
+      PYTHON: ${{ matrix.python-version }}
+      SALT: ${{ matrix.salt-version }}
+      TESTSUITE: ${{ matrix.testsuite }}
+      SOURCE: ${{ matrix.source }}
 
     steps:
     - uses: actions/checkout@v3
@@ -252,6 +286,30 @@ jobs:
         name: runtests-${{ runner.os }}-${{ matrix.python-version }}-salt-${{ matrix.salt-version }}-${{ matrix.source }}${{ matrix.testsuite == 'examples' && '-examples' || '' }}.log
         path: artifacts/runtests-*.log
 
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v3
+      with:
+        token: ${{ secrets.CODECOV_TOKEN }}
+        directory: artifacts/
+        env_vars: PYTHON,SALT,TESTSUITE,SOURCE
+        fail_ci_if_error: true
+        files: coverage-project.xml
+        flags: src,${{ runner.os }},${{ matrix.testsuite }}
+        name: project-${{ runner.os }}-salt-${{ matrix.salt-version }}-Py${{ matrix.python-version}}-${{ matrix.testsuite }}-${{ matrix.source }}
+        verbose: true
+
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v3
+      with:
+        token: ${{ secrets.CODECOV_TOKEN }}
+        directory: artifacts/
+        env_vars: PYTHON,SALT,TESTSUITE,SOURCE
+        fail_ci_if_error: true
+        files: coverage-tests.xml
+        flags: tests,${{ runner.os }},${{ matrix.testsuite }}
+        name: tests-${{ runner.os }}-salt-${{ matrix.salt-version }}-Py${{ matrix.python-version}}-${{ matrix.testsuite }}-${{ matrix.source }}
+        verbose: true
+
 
   macos:
     name: MacOS
@@ -273,6 +331,12 @@ jobs:
           - {"salt-version": "3006.0", "python-version": "3.10", "testsuite": "examples", "source": "pypi"}
           - {"salt-version": "3006.x", "python-version": "3.10", "testsuite": "core", "source": "onedir"}
           - {"salt-version": "3006.x", "python-version": "3.10", "testsuite": "examples", "source": "onedir"}
+
+    env:
+      PYTHON: ${{ matrix.python-version }}
+      SALT: ${{ matrix.salt-version }}
+      TESTSUITE: ${{ matrix.testsuite }}
+      SOURCE: ${{ matrix.source }}
 
     steps:
     - uses: actions/checkout@v3
@@ -316,6 +380,30 @@ jobs:
       with:
         name: runtests-${{ runner.os }}-${{ matrix.python-version }}-salt-${{ matrix.salt-version }}-${{ matrix.source }}${{ matrix.testsuite == 'examples' && '-examples' || '' }}.log
         path: artifacts/runtests-*.log
+
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v3
+      with:
+        token: ${{ secrets.CODECOV_TOKEN }}
+        directory: artifacts/
+        env_vars: PYTHON,SALT,TESTSUITE,SOURCE
+        fail_ci_if_error: true
+        files: coverage-project.xml
+        flags: src,${{ runner.os }},${{ matrix.testsuite }}
+        name: project-${{ runner.os }}-salt-${{ matrix.salt-version }}-Py${{ matrix.python-version}}-${{ matrix.testsuite }}-${{ matrix.source }}
+        verbose: true
+
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v3
+      with:
+        token: ${{ secrets.CODECOV_TOKEN }}
+        directory: artifacts/
+        env_vars: PYTHON,SALT,TESTSUITE,SOURCE
+        fail_ci_if_error: true
+        files: coverage-tests.xml
+        flags: tests,${{ runner.os }},${{ matrix.testsuite }}
+        name: tests-${{ runner.os }}-salt-${{ matrix.salt-version }}-Py${{ matrix.python-version}}-${{ matrix.testsuite }}-${{ matrix.source }}
+        verbose: true
 
   build:
     name: Build Package
