@@ -196,7 +196,12 @@ def _tests(session, onedir=False, examples=False):
     ]
     if session._runner.global_config.forcecolor:
         args.append("--color=yes")
-    tests_root = pathlib.Path("examples", "tests") if examples else pathlib.Path("tests")
+    if examples:
+        args.extend(["-c", str(REPO_ROOT / "pytest-examples.ini")])
+        tests_root = pathlib.Path("examples", "tests")
+    else:
+        args.extend(["-c", str(REPO_ROOT / "pytest.ini")])
+        tests_root = pathlib.Path("tests")
     if not session.posargs:
         args.append(str(tests_root))
     else:
