@@ -22,10 +22,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
+    - uses: ./.github/actions/setup-actionlint
+    - uses: ./.github/actions/setup-shellcheck
+
     - name: Set up Python
       uses: actions/setup-python@v4
       with:
         python-version: 3.9
+
     - name: Set Cache Key
       run: |
         echo "PY=$(python --version --version | sha256sum | cut -d' ' -f1)" >> "$GITHUB_ENV"
