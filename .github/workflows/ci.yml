@@ -161,7 +161,7 @@ jobs:
         token: ${{ secrets.CODECOV_TOKEN }}
         directory: artifacts/
         env_vars: PYTHON,SALT,TESTSUITE,SOURCE
-        fail_ci_if_error: true
+        fail_ci_if_error: false
         files: coverage-project.xml
         flags: src,${{ runner.os }},${{ matrix.testsuite }}
         name: project-${{ runner.os }}-salt-${{ matrix.salt-version }}-Py${{ matrix.python-version}}-${{ matrix.testsuite }}-${{ matrix.source }}
@@ -174,7 +174,7 @@ jobs:
         token: ${{ secrets.CODECOV_TOKEN }}
         directory: artifacts/
         env_vars: PYTHON,SALT,TESTSUITE,SOURCE
-        fail_ci_if_error: true
+        fail_ci_if_error: false
         files: coverage-tests.xml
         flags: tests,${{ runner.os }},${{ matrix.testsuite }}
         name: tests-${{ runner.os }}-salt-${{ matrix.salt-version }}-Py${{ matrix.python-version}}-${{ matrix.testsuite }}-${{ matrix.source }}
@@ -295,7 +295,7 @@ jobs:
         token: ${{ secrets.CODECOV_TOKEN }}
         directory: artifacts/
         env_vars: PYTHON,SALT,TESTSUITE,SOURCE
-        fail_ci_if_error: true
+        fail_ci_if_error: false
         files: coverage-project.xml
         flags: src,${{ runner.os }},${{ matrix.testsuite }}
         name: project-${{ runner.os }}-salt-${{ matrix.salt-version }}-Py${{ matrix.python-version}}-${{ matrix.testsuite }}-${{ matrix.source }}
@@ -308,7 +308,7 @@ jobs:
         token: ${{ secrets.CODECOV_TOKEN }}
         directory: artifacts/
         env_vars: PYTHON,SALT,TESTSUITE,SOURCE
-        fail_ci_if_error: true
+        fail_ci_if_error: false
         files: coverage-tests.xml
         flags: tests,${{ runner.os }},${{ matrix.testsuite }}
         name: tests-${{ runner.os }}-salt-${{ matrix.salt-version }}-Py${{ matrix.python-version}}-${{ matrix.testsuite }}-${{ matrix.source }}
@@ -392,7 +392,7 @@ jobs:
         token: ${{ secrets.CODECOV_TOKEN }}
         directory: artifacts/
         env_vars: PYTHON,SALT,TESTSUITE,SOURCE
-        fail_ci_if_error: true
+        fail_ci_if_error: false
         files: coverage-project.xml
         flags: src,${{ runner.os }},${{ matrix.testsuite }}
         name: project-${{ runner.os }}-salt-${{ matrix.salt-version }}-Py${{ matrix.python-version}}-${{ matrix.testsuite }}-${{ matrix.source }}
@@ -405,7 +405,7 @@ jobs:
         token: ${{ secrets.CODECOV_TOKEN }}
         directory: artifacts/
         env_vars: PYTHON,SALT,TESTSUITE,SOURCE
-        fail_ci_if_error: true
+        fail_ci_if_error: false
         files: coverage-tests.xml
         flags: tests,${{ runner.os }},${{ matrix.testsuite }}
         name: tests-${{ runner.os }}-salt-${{ matrix.salt-version }}-Py${{ matrix.python-version}}-${{ matrix.testsuite }}-${{ matrix.source }}
