@@ -1,1 +1,1 @@
-Define a last CI job which set's the whole pipeline exit status.
+Define a last CI job which set's the whole pipeline exit status. Run `actionlint` and `shellcheck` against workflows in CI.

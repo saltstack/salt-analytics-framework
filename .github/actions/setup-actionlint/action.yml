@@ -4,11 +4,7 @@ description: Setup actionlint
 inputs:
   version:
     description: The version of actionlint
-    default: 1.6.24
-  cache-seed:
-    required: true
-    type: string
-    description: Seed used to invalidate caches
+    default: 1.6.25
 
 runs:
   using: composite
@@ -18,7 +14,7 @@ runs:
       uses: actions/cache@v3
       with:
         path: /usr/local/bin/actionlint
-        key: ${{ inputs.cache-seed }}|${{ runner.os }}|${{ runner.arch }}|actionlint|${{ inputs.version }}
+        key: ${{ runner.os }}|${{ runner.arch }}|actionlint|${{ inputs.version }}
 
     - name: Setup actionlint
       shell: bash
