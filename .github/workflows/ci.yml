@@ -375,12 +375,12 @@ jobs:
         token: ${{ secrets.GITHUB_TOKEN }}
 
     - name: Publish distribution 📦 to Test PyPI
-      uses: pypa/gh-action-pypi-publish@v1.8.5
+      uses: pypa/gh-action-pypi-publish@v1.8.6
       with:
         repository-url: https://test.pypi.org/legacy/
         print-hash: true
 
     - name: Publish distribution 📦 to PyPI
-      uses: pypa/gh-action-pypi-publish@v1.8.5
+      uses: pypa/gh-action-pypi-publish@v1.8.6
       with:
         print-hash: true
