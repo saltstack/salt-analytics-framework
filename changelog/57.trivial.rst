@@ -1,0 +1,7 @@
+Several CI related improvements:
+
+* Automatic update GH Actions steps versions
+* Different pytest config file for regular test suite and examples test suite
+* Use the `tests_root` variable instead of hardcoding paths when generating coverage reports
+* Force a newer `python-tools-scripts`, `>=0.17.0`
+* Explicitly define `REPO_ROOT` instead of relying on `ptscripts.CWD`
