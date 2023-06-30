@@ -8,3 +8,4 @@ psutil
 pydantic>=1.8.2,<2.0
 salt>=3005
 typing-extensions; python_version < "3.9.2"
+papermill
