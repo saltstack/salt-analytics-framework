@@ -37,10 +37,15 @@ def _construct_event(tag: str, stamp: datetime, event_data: dict[str, Any]) -> S
         for key in list(event_data):
             if key.startswith("_"):
                 event_data.pop(key)
+        event_data_value = event_data.get("data") or event_data
+        if isinstance(event_data_value, str):
+            data = {"return": event_data_value}
+        else:
+            data = event_data_value
         salt_event = SaltEvent(
             tag=tag,
             stamp=stamp,
-            data=event_data.get("data") or event_data,
+            data=data,
             raw_data=event_raw_data,
         )
         log.debug("Constructed SaltEvent: %s", salt_event)
