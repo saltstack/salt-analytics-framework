@@ -345,7 +345,7 @@ class SaltEvent(NonMutableModel):
 
     tag: str
     stamp: datetime
-    data: Dict[str, Any]
+    data: Dict[str, Any] | str
     raw_data: Dict[str, Any]
 
     @staticmethod
