@@ -112,7 +112,7 @@ repos:
         additional_dependencies:
           - types-attrs
           - types-setuptools
-          - pydantic
+          - pydantic>=1.8.2,<2.0
           - types-aiofiles
           - aiostream
           - typing-extensions; python_version < "3.9"
