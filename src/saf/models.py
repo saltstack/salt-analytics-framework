@@ -6,6 +6,7 @@ Salt Analytics Framework Models.
 from __future__ import annotations
 
 import logging
+import platform
 from datetime import datetime
 from datetime import timezone
 from typing import TYPE_CHECKING
@@ -15,16 +16,20 @@ from typing import Generic
 from typing import List
 from typing import Mapping
 from typing import Optional
+from typing import Tuple
 from typing import Type
 from typing import TypeVar
 from typing import Union
 
+import salt.utils.network
+import salt.version
 from pydantic import BaseModel
 from pydantic import Field
 from pydantic import PrivateAttr
 from pydantic import validator
 from pydantic.generics import GenericModel
 
+import saf
 from saf.plugins import PluginsList
 from saf.utils import dt
 
@@ -340,6 +345,34 @@ class SaltEvent(NonMutableModel):
 PipelineRunContextConfigType = TypeVar("PipelineRunContextConfigType", bound=NonMutableConfig)
 
 
+class RuntimeAnalyticsInfo(GenericModel):
+    """
+    Salt analytics runtime information.
+    """
+
+    version: str
+
+
+class RuntimeSaltInfo(GenericModel):
+    """
+    Salt runtime information.
+    """
+
+    id: str  # noqa: A003
+    role: str
+    version: str
+    version_info: Tuple[int, ...]
+
+
+class RuntimeInfo(GenericModel):
+    """
+    Salt analytics pipelines runtime information.
+    """
+
+    salt: RuntimeSaltInfo
+    analytics: RuntimeAnalyticsInfo
+
+
 class PipelineRunContext(GenericModel, Generic[PipelineRunContextConfigType]):
     """
     Class representing a pipeline run context.
@@ -348,6 +381,7 @@ class PipelineRunContext(GenericModel, Generic[PipelineRunContextConfigType]):
     config: PipelineRunContextConfigType
     cache: Dict[str, Any] = Field(default_factory=dict)
     shared_cache: Dict[str, Any] = Field(default_factory=dict)
+    _info: Optional[RuntimeInfo] = PrivateAttr(default=None)
 
     @property
     def pipeline_config(self) -> AnalyticsConfig:  # noqa: ANN101
@@ -363,3 +397,30 @@ class PipelineRunContext(GenericModel, Generic[PipelineRunContextConfigType]):
         """
         config: Dict[str, Any] = self.config.parent.salt_config
         return config
+
+    @property
+    def info(self) -> RuntimeInfo:  # noqa: ANN101
+        """
+        Return the pipeline runtime information.
+        """
+        if self._info is None:
+            salt_config = self.salt_config
+            salt_id = salt_config.get("id")
+            if salt_id is None:
+                salt_id = salt_config.get("grains", {}).get("fqdn")
+            if salt_id is None:
+                salt_id = salt.utils.network.get_fqhostname()
+            if salt_id is None:
+                salt_id = platform.node()
+            self._info = RuntimeInfo.construct(
+                salt=RuntimeSaltInfo.construct(
+                    id=salt_id,
+                    role=salt_config["__role"],
+                    version=salt.version.__version__,
+                    version_info=salt.version.__saltstack_version__.info,
+                ),
+                analytics=RuntimeAnalyticsInfo.construct(
+                    version=saf.__version__,
+                ),
+            )
+        return self._info
