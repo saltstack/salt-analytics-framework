@@ -1,0 +1,1 @@
+Add `PipelineRunContext.info`, the information about where the pipeline is running.

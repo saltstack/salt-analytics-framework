@@ -29,3 +29,5 @@ except ImportError:  # pragma: no cover
         except ImportError:
             # pkg resources isn't even available?!
             pass
+
+__all__ = ["__version__"]
