@@ -615,7 +615,6 @@ def build(session):
 
         git show -s --format=%at HEAD
     """
-    shutil.rmtree("dist/", ignore_errors=True)
     if SKIP_REQUIREMENTS_INSTALL is False:
         requirements_file = REPO_ROOT / "requirements" / "build.txt"
         session.install(
@@ -624,6 +623,22 @@ def build(session):
             str(requirements_file.relative_to(REPO_ROOT)),
             silent=PIP_INSTALL_SILENT,
         )
+
+    if not session.posargs:
+        build_path = REPO_ROOT
+    elif len(session.posargs) > 1:
+        session.error("Only one argument supported, which is `examples`")
+    elif session.posargs[0] in ("src", "source"):
+        build_path = REPO_ROOT
+    elif session.posargs[0] == "examples":
+        build_path = REPO_ROOT / "examples"
+    else:
+        session.error(
+            f"Passing '{session.posargs[0]}' is not supported. Only one argument "
+            "supported, which is `examples`"
+        )
+
+    shutil.rmtree(build_path / "dist", ignore_errors=True)
     timestamp = session.run(
         "git",
         "show",
@@ -641,17 +656,19 @@ def build(session):
         "build",
         "--sdist",
         "--wheel",
-        str(REPO_ROOT),
+        str(build_path),
         env=env,
     )
     # Recreate sdist to be reproducible
     recompress = Recompress(timestamp)
-    for targz in REPO_ROOT.joinpath("dist").glob("*.tar.gz"):
+    for targz in build_path.joinpath("dist").glob("*.tar.gz"):
         session.log("Re-compressing %s...", targz.relative_to(REPO_ROOT))
         recompress.recompress(targz)
 
     sha256sum = shutil.which("sha256sum")
     if sha256sum:
-        packages = [str(pkg.relative_to(REPO_ROOT)) for pkg in REPO_ROOT.joinpath("dist").iterdir()]
+        packages = [
+            str(pkg.relative_to(REPO_ROOT)) for pkg in build_path.joinpath("dist").iterdir()
+        ]
         session.run("sha256sum", *packages, external=True)
-    session.run("python", "-m", "twine", "check", "dist/*")
+    session.run("python", "-m", "twine", "check", str(build_path / "dist" / "*"))
