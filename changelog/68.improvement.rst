@@ -1,0 +1,3 @@
+Several improvements to the project
+
+* The `salt-analytics.examples` package now uses the same version as `salt-analytics-framework`
