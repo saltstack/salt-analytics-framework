@@ -15,6 +15,8 @@ from ptscripts import command_group
 
 log = logging.getLogger(__name__)
 
+REPO_ROOT = pathlib.Path(__file__).parent.parent
+
 # Define the command group
 cgroup = command_group(name="pre-commit", help="Pre-Commit Related Commands", description=__doc__)
 
@@ -33,11 +35,9 @@ def examples_requirements(ctx: Context, files: list[pathlib.Path]):
     Include all individual examples requirements files in `all.txt`.
     """
     if files:
-        examples_requirements_dir = (
-            pathlib.Path(__file__).resolve().parent.parent / "examples" / "requirements"
-        )
+        examples_requirements_dir = REPO_ROOT / "examples" / "requirements"
         includes = []
-        for file in examples_requirements_dir.iterdir():
+        for file in examples_requirements_dir.glob("*.txt"):
             if file.name != "all.txt":
                 includes.append(f"-r {file.name}")
 
@@ -47,9 +47,8 @@ def examples_requirements(ctx: Context, files: list[pathlib.Path]):
             original_contents = [line.strip() for line in rfh.readlines()]
 
         if set(original_contents) != set(includes):
-            includes.append("")
-            all_file.write_text("\n".join(includes))
-            ctx.error(f"Modified {all_file}")
+            all_file.write_text("\n".join(sorted(includes)) + "\n")
+            ctx.error(f"Modified {all_file.relative_to(REPO_ROOT)}")
 
 
 @cgroup.command(
