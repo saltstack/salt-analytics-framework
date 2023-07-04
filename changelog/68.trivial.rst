@@ -1,0 +1,3 @@
+Several trivial/internal updates to the project:
+
+* Allow the `nox -e build` target to also build the examples package
