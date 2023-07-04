@@ -10,9 +10,6 @@ import pathlib
 from typing import AsyncIterator
 from typing import Type
 
-import numpy as np
-from tensorflow import keras
-
 from saf.models import CollectedEvent
 from saf.models import PipelineRunContext
 from saf.models import ProcessConfigBase
@@ -43,6 +40,9 @@ async def process(
     """
     Run the MNIST network.
     """
+    import numpy as np
+    from tensorflow import keras
+
     if "mnist_model" not in ctx.cache:
         model_path = pathlib.Path(ctx.config.model)
         log.debug("Loading the mnist model from %s", model_path)
