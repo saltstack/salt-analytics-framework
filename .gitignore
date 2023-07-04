@@ -139,3 +139,6 @@ artifacts/
 
 # Ignore neovim backup files
 *~
+
+# RADIO Demon
+RADIO
