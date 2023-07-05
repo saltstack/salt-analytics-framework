@@ -26,12 +26,9 @@ class SaltCommandConfig(CollectConfigBase):
     Configuration schema for the beacons collect plugin.
     """
 
-    targets: str
-    cmd: str
-    args: List[str] | None
-    kwargs: Dict[str, str] | None
-    interval: float = 5
-    cache_flag: str | None = None
+    targets: str = "*"
+    grains: List[str]
+    interval: float = 20
 
 
 def get_config_schema() -> Type[SaltCommandConfig]:
@@ -41,7 +38,18 @@ def get_config_schema() -> Type[SaltCommandConfig]:
     return SaltCommandConfig
 
 
-async def collect(*, ctx: PipelineRunContext[SaltCommandConfig]) -> AsyncIterator[CollectedEvent]:
+class GrainsCollectedEvent(CollectedEvent):
+    """
+    A collected event surrounding a SaltEvent.
+    """
+
+    minion: str
+    grains: Dict[str, str]
+
+
+async def collect(
+    *, ctx: PipelineRunContext[SaltCommandConfig]
+) -> AsyncIterator[GrainsCollectedEvent]:
     """
     Method called to collect events.
     """
@@ -49,8 +57,8 @@ async def collect(*, ctx: PipelineRunContext[SaltCommandConfig]) -> AsyncIterato
     client = LocalClient(mopts=ctx.salt_config.copy())
 
     while True:
-        ret = client.cmd(config.targets, config.cmd, arg=config.args, kwarg=config.kwargs)
-        event = CollectedEvent(data={config._name: ret})  # noqa: SLF001
-        log.debug("CollectedEvent: %s", event)
-        yield event
+        ret = client.cmd(config.targets, "grains.item", arg=config.grains)
+        for minion, grains in ret.items():
+            event = GrainsCollectedEvent(data=ret, minion=minion, grains=grains)
+            yield event
         await asyncio.sleep(config.interval)
