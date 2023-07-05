@@ -103,8 +103,11 @@ class Pipeline:
     async def _run(self: P) -> None:
         self._build_contexts()
         async for event in self._collectors_stream():
-            async for processed_event in self._pipe_process_events(event):
-                await self._forward_event(processed_event)
+            if self.process_configs:
+                async for processed_event in self._pipe_process_events(event):
+                    await self._forward_event(processed_event)
+            else:
+                await self._forward_event(event)
 
     def _build_contexts(self: P) -> None:
         for collect_config in self.collect_configs:

@@ -1,0 +1,1 @@
+Fix regression which prevented pipelines without processors
