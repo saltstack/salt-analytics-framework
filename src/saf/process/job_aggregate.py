@@ -63,24 +63,27 @@ async def process(
         salt_event = event.salt_event
         tag = salt_event.tag
         data = salt_event.data
+        if "watched_jids" not in ctx.cache:
+            ctx.cache["watched_jids"] = {}
         if fnmatch.fnmatch(tag, "salt/job/*/new"):
+            jid = tag.split("/")[2]
             # We will probably want to make this condition configurable
-            if TYPE_CHECKING:
-                assert isinstance(salt_event.data, dict)
-            if data.get("fun") == "state.apply":
-                jid = tag.split("/")[2]
-                if "watched_jids" not in ctx.cache:
-                    ctx.cache["watched_jids"] = {}
-                # We are going to want a TTL at some point for the watched jids
-                ctx.cache["watched_jids"][jid] = salt_event
+            if jid not in ctx.cache["watched_jids"]:
+                ctx.cache["watched_jids"][jid] = {
+                    "minions": set(event.data["minions"]),
+                    "event": salt_event,
+                }
         elif fnmatch.fnmatch(tag, "salt/job/*/ret/*"):
             split_tag = tag.split("/")
             jid = split_tag[2]
-            if "watched_jids" not in ctx.cache:
-                ctx.cache["watched_jids"] = {}
+            minion_id = split_tag[-1]
             if jid in ctx.cache["watched_jids"]:
-                job_start_event = ctx.cache["watched_jids"][jid]
-                minion_id = split_tag[-1]
+                ctx.cache["watched_jids"][jid]["minions"].remove(minion_id)
+                if not ctx.cache["watched_jids"][jid]["minions"]:
+                    # No more minions should return. Remove jid from cache
+                    job_start_event = ctx.cache["watched_jids"].pop(jid)["event"]
+                else:
+                    job_start_event = ctx.cache["watched_jids"][jid]["event"]
                 start_time = job_start_event.stamp
                 end_time = salt_event.stamp
                 duration = end_time - start_time
