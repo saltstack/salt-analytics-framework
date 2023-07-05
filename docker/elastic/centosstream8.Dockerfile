@@ -33,6 +33,7 @@ FROM base as minion-2
 ADD docker/elastic/conf/supervisord.minion.conf /etc/supervisor/conf.d/minion.conf
 ADD docker/elastic/conf/beacons.conf /etc/salt/minion.d/beacons.conf
 ADD docker/elastic/conf/analytics.minion.conf /etc/salt/minion.d/salt-analytics.conf
+ADD docker/elastic/conf/demo-schedule.conf /etc/salt/minion.d/demo-schedule.conf
 RUN mkdir -p /etc/salt/minion.d \
   && echo 'id: minion-2' > /etc/salt/minion.d/id.conf \
   && echo 'master: master-1' > /etc/salt/minion.d/master.conf \
