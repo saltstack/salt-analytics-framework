@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import fnmatch
 import logging
+import pprint
 from typing import TYPE_CHECKING
 from typing import AsyncIterator
 from typing import Dict
@@ -62,7 +63,9 @@ async def process(
     Aggregate received events, otherwise store in cache.
     """
     if isinstance(event, EventBusCollectedEvent):
+        log.debug("Event Bus Collected Event:\n%s", pprint.pformat(event.dict()))
         salt_event = event.salt_event
+        log.debug("Event Bus Collected Salt Event:\n%s", pprint.pformat(salt_event))
         tag = salt_event.tag
         data = salt_event.data
         if "watched_jids" not in ctx.cache:
