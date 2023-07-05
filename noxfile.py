@@ -235,7 +235,7 @@ def _tests(session, onedir=False, examples=False):
                 "xml",
                 "-o",
                 str(COVERAGE_REPORT_PROJECT),
-                f"--omit={str(tests_root / '*')}",
+                f"--omit={tests_root / '*'!s}",
                 "--include=src/saf/*",
             )
             # Generate report for tests code coverage
@@ -245,7 +245,7 @@ def _tests(session, onedir=False, examples=False):
                 "-o",
                 str(COVERAGE_REPORT_TESTS),
                 "--omit=src/saf/*",
-                f"--include={str(tests_root / '*')}",
+                f"--include={tests_root / '*'!s}",
             )
             try:
                 session.run("coverage", "report", "--show-missing", "--include=src/saf/*")
