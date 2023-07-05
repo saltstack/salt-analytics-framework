@@ -46,6 +46,7 @@ class BeaconCollectedEvent(CollectedEvent):
     """
 
     beacon: str
+    id: str  # noqa: A003
     tag: str
     stamp: datetime
     raw_data: Dict[str, Any]
@@ -84,8 +85,16 @@ async def collect(*, ctx: PipelineRunContext[BeaconsConfig]) -> AsyncIterator[Be
     tags = {f"salt/beacon/*/{beacon}/*" for beacon in config.beacons}
     log.info("The beacons collect plugin is configured to listen to tags: %s", tags)
     async for salt_event in eventbus.iter_events(opts=ctx.salt_config.copy(), tags=tags):
+        if "beacon_name" not in salt_event.raw_data:
+            # TODO @s0undt3ch: We're listening master side, and the payload is not the same... Fix it?
+            continue
+        daemon_id = salt_event.data.get("id")
+        if daemon_id is None:
+            tag_parts = salt_event.tag.split("/")
+            daemon_id = tag_parts[2]
         yield BeaconCollectedEvent(
             beacon=salt_event.raw_data["beacon_name"],
+            id=daemon_id,
             tag=salt_event.tag,
             stamp=salt_event.stamp,
             data=salt_event.data,
