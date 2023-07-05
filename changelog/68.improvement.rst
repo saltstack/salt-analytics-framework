@@ -4,3 +4,4 @@ Several improvements to the project
 * Defer imports of uncommon usage libraries to reduce base requirements(for example, keras, numpy, papermill)
 * When loading plugin configs, catch `KeyError` on unavailable plugins and list all available.
 * Pass the event tag and stamp explicitly when calling `saf.utils.eventbus._construct_event()`
+* Add the `id` attribute to `BeaconCollectedEvent`, which is minion ID.
