@@ -53,7 +53,7 @@ repos:
   # <---- Local Hooks ------------------------------------------------------------------------------------------------
 
   - repo: https://github.com/s0undt3ch/python-tools-scripts
-    rev: "0.12.0"
+    rev: "0.17.0"
     hooks:
       - id: tools
         alias: actionlint
@@ -79,7 +79,7 @@ repos:
 
   # ----- Code Formatting and Analysis ---------------------------------------------------------->
   - repo: https://github.com/charliermarsh/ruff-pre-commit
-    rev: "v0.0.265"
+    rev: "v0.0.278"
     hooks:
       - id: ruff
         args:
@@ -87,23 +87,23 @@ repos:
         exclude: (.pre-commit-hooks/.*|docs/.*)\.py
 
   - repo: https://github.com/psf/black
-    rev: 23.3.0
+    rev: 23.7.0
     hooks:
       - id: black
         args: [-l 100]
         exclude: src/saf/version.py
 
   - repo: https://github.com/asottile/blacken-docs
-    rev: 1.13.0
+    rev: 1.15.0
     hooks:
       - id: blacken-docs
         args: [--skip-errors]
         files: ^(docs/.*\.rst|src/saf/.*\.py)$
         additional_dependencies:
-          - black==23.3.0
+          - black==23.7.0
 
   - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v1.2.0
+    rev: v1.4.1
     hooks:
       - id: mypy
         name: Run mypy against the code base
