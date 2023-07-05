@@ -32,6 +32,7 @@ FROM base as master-2
 
 ADD docker/elastic/conf/supervisord.master.conf /etc/supervisor/conf.d/master.conf
 ADD docker/elastic/conf/analytics.master.conf /etc/salt/master.d/salt-analytics.conf
+ADD docker/elastic/conf/logging.conf /etc/salt/master.d/logging.conf
 RUN mkdir -p /etc/salt/master.d \
   && echo 'id: master-2' > /etc/salt/master.d/id.conf \
   && echo 'open_mode: true' > /etc/salt/master.d/open-mode.conf \
@@ -46,6 +47,7 @@ ADD docker/elastic/conf/supervisord.minion.conf /etc/supervisor/conf.d/minion.co
 ADD docker/elastic/conf/beacons.conf /etc/salt/minion.d/beacons.conf
 ADD docker/elastic/conf/analytics.minion.conf /etc/salt/minion.d/salt-analytics.conf
 ADD docker/elastic/conf/demo-schedule.conf /etc/salt/minion.d/demo-schedule.conf
+ADD docker/elastic/conf/logging.conf /etc/salt/minion.d/logging.conf
 RUN mkdir -p /etc/salt/minion.d \
   && echo 'id: minion-3' > /etc/salt/minion.d/id.conf \
   && echo 'master: master-2' > /etc/salt/minion.d/master.conf \
