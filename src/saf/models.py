@@ -137,7 +137,15 @@ class CollectConfigBase(PluginConfigMixin):
         """
         Return the plugin instance(module) for which this configuration refers to.
         """
-        return PluginsList.instance().collectors[self.plugin]
+        try:
+            return PluginsList.instance().collectors[self.plugin]
+        except KeyError as exc:
+            log.warning(
+                "Failed to load %r collector plugin. Available collector plugins: %s",
+                self.plugin,
+                list(PluginsList.instance().collectors),
+            )
+            raise exc from None
 
 
 PCB = TypeVar("PCB", bound="ProcessConfigBase")
@@ -180,7 +188,15 @@ class ProcessConfigBase(PluginConfigMixin):
         """
         Return the plugin instance(module) for which this configuration refers to.
         """
-        return PluginsList.instance().processors[self.plugin]
+        try:
+            return PluginsList.instance().processors[self.plugin]
+        except KeyError as exc:
+            log.warning(
+                "Failed to load %r processor plugin. Available processor plugins: %s",
+                self.plugin,
+                list(PluginsList.instance().processors),
+            )
+            raise exc from None
 
 
 FCB = TypeVar("FCB", bound="ForwardConfigBase")
@@ -223,7 +239,15 @@ class ForwardConfigBase(PluginConfigMixin):
         """
         Return the plugin instance(module) for which this configuration refers to.
         """
-        return PluginsList.instance().forwarders[self.plugin]
+        try:
+            return PluginsList.instance().forwarders[self.plugin]
+        except KeyError as exc:
+            log.warning(
+                "Failed to load %r forwarder plugin. Available forwarder plugins: %s",
+                self.plugin,
+                list(PluginsList.instance().forwarders),
+            )
+            raise exc from None
 
 
 PC = TypeVar("PC", bound="PipelineConfig")

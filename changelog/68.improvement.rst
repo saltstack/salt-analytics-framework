@@ -2,3 +2,4 @@ Several improvements to the project
 
 * The `salt-analytics.examples` package now uses the same version as `salt-analytics-framework`
 * Defer imports of uncommon usage libraries to reduce base requirements(for example, keras, numpy, papermill)
+* When loading plugin configs, catch `KeyError` on unavailable plugins and list all available.
