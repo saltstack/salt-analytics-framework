@@ -19,12 +19,13 @@ import salt.utils.event
 from saf.models import SaltEvent
 
 if TYPE_CHECKING:
+    from datetime import datetime
     from queue import Queue
 
 log = logging.getLogger(__name__)
 
 
-def _construct_event(event_data: dict[str, Any]) -> SaltEvent | None:
+def _construct_event(tag: str, stamp: datetime, event_data: dict[str, Any]) -> SaltEvent | None:
     """
     Construct a :py:class:`~saf.models.SaltEvent` from a salt event payload.
     """
@@ -37,9 +38,9 @@ def _construct_event(event_data: dict[str, Any]) -> SaltEvent | None:
             if key.startswith("_"):
                 event_data.pop(key)
         salt_event = SaltEvent(
-            tag=event_data["tag"],
-            stamp=event_raw_data["_stamp"],
-            data=event_data["data"],
+            tag=tag,
+            stamp=stamp,
+            data=event_data.get("data") or event_data,
             raw_data=event_raw_data,
         )
         log.debug("Constructed SaltEvent: %s", salt_event)
@@ -80,9 +81,6 @@ def _process_events(
                     for tag in tags:
                         try:
                             if fnmatch.fnmatch(beacon_event_data["tag"], tag):
-                                if "_stamp" not in beacon_event_data:
-                                    # Wrapped beacon data usually lack the _stamp key/value pair. Use parent's.
-                                    beacon_event_data["_stamp"] = event_data["_stamp"]
                                 # Unwrap the nested data key/value pair if needed
                                 if "data" in beacon_event_data["data"]:
                                     beacon_event_data["data"] = beacon_event_data["data"].pop(
@@ -93,7 +91,11 @@ def _process_events(
                                     beacon_event_data["tag"],
                                     beacon_event_data["data"],
                                 )
-                                salt_event = _construct_event(beacon_event_data)
+                                salt_event = _construct_event(
+                                    beacon_event_data["tag"],
+                                    event_data["_stamp"],
+                                    beacon_event_data,
+                                )
                                 if salt_event:
                                     events_queue.put_nowait(salt_event)
                                 # We found a matching tag, stop iterating tags
@@ -109,7 +111,7 @@ def _process_events(
             for tag in tags:
                 if fnmatch.fnmatch(event_tag, tag):
                     log.debug("Matching event; TAG: %r DATA: %r", event_tag, event_data)
-                    salt_event = _construct_event(event_data)
+                    salt_event = _construct_event(event_tag, event_data["_stamp"], event_data)
                     if salt_event:
                         events_queue.put_nowait(salt_event)
                     # We found a matching tag, stop iterating tags
