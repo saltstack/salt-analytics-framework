@@ -430,6 +430,7 @@ jobs:
     - name: Install Nox
       run: |
         python -m pip install nox
+
     - name: Build a binary wheel and a source tarball
       run: |
         nox -e build
@@ -441,6 +442,18 @@ jobs:
         path: |
           dist/*.tar.gz
           dist/*.whl
+
+    - name: Build examples binary wheel and a source tarball
+      run: |
+        nox -e build -- examples
+
+    - name: Upload Built Examples Wheel and Source Tarball
+      uses: actions/upload-artifact@v3
+      with:
+        name: examples-release-artifacts
+        path: |
+          examples/dist/*.tar.gz
+          examples/dist/*.whl
 
   release:
     name: Publish Release
