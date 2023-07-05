@@ -1,3 +1,4 @@
 Several improvements to the project
 
 * When loading plugin configs, catch `KeyError` on unavailable plugins and list all available.
+* Pass the event tag and stamp explicitly when calling `saf.utils.eventbus._construct_event()`
