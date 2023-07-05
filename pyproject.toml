@@ -73,11 +73,14 @@ extend-include = [
 ]
 ignore = [
   # D* pydocstyle
-  "D200",   # Reformat to one line
-  "D212",   # Remove whitespace after opening quotes
-  "COM",    # flake8-commas - Black takes care of this
-  "ERA",    # eradicate
-  "SIM108", # Use ternary operator `A = X if Y else Z` instead of `if`-`else`-block
+  "D200",    # Reformat to one line
+  "D212",    # Remove whitespace after opening quotes
+  "COM",     # flake8-commas - Black takes care of this
+  "ERA",     # eradicate
+  "SIM108",  # Use ternary operator `A = X if Y else Z` instead of `if`-`else`-block
+  "PERF203", # `try`-`except` within a loop incurs performance overhead"
+  "PERF401", # Use a list comprehension to create a transformed list
+  "PERF402", # Use `list` or `list.copy` to create a copy of a list
 ]
 ignore-init-module-imports = true
 builtins = [
@@ -108,6 +111,9 @@ format = "grouped"
   "SLF001", # Private member accessed"
   "ARG003", # Unused class method argument: `kwargs`
 ]
+"src/saf/pipeline.py" = [
+  "PERF401",  # Use a list comprehension to create a transformed list"
+]
 "src/saf/collect/file.py" = [
   "TCH003",  # Move standard library import `pathlib` into a type-checking block
 ]
@@ -132,6 +138,7 @@ format = "grouped"
   "PLR0912",
   "DTZ005",
   "FBT002",
+  "PLR0913", # Too many arguments to function call"
   "PLR0915", # Too many statements
 ]
 "tools/**/*.py" = [

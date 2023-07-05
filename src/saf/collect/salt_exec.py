@@ -14,6 +14,7 @@ from typing import List
 from typing import Type
 
 import salt.loader
+from pydantic import Field
 
 from saf.models import CollectConfigBase
 from saf.models import CollectedEvent
@@ -29,8 +30,8 @@ class SaltExecConfig(CollectConfigBase):
 
     interval: float = 5
     fn: str = "test.ping"
-    args: List[Any] = []
-    kwargs: Dict[str, Any] = {}
+    args: List[Any] = Field(default_factory=list)
+    kwargs: Dict[str, Any] = Field(default_factory=dict)
 
 
 def get_config_schema() -> Type[SaltExecConfig]:

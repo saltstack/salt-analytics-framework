@@ -14,6 +14,8 @@ from typing import List
 from typing import Optional
 from typing import Type
 
+from pydantic import Field
+
 from saf.models import CollectedEvent
 from saf.models import PipelineRunContext
 from saf.models import ProcessConfigBase
@@ -28,8 +30,8 @@ class JupyterNotebookConfig(ProcessConfigBase):
 
     notebook: pathlib.Path
     output_notebook: Optional[pathlib.Path]
-    params: Dict[str, Any] = {}
-    papermill_kwargs: Dict[str, Any] = {}
+    params: Dict[str, Any] = Field(default_factory=dict)
+    papermill_kwargs: Dict[str, Any] = Field(default_factory=dict)
     output_tag: Optional[str]
     input_keys: List[str]
 
