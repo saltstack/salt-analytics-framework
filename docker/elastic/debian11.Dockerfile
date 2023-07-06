@@ -35,10 +35,7 @@ ADD docker/elastic/conf/supervisord.master.conf /etc/supervisor/conf.d/master.co
 ADD docker/elastic/conf/supervisord.loop-jobs.conf /etc/supervisor/conf.d/loop-jobs.conf
 ADD docker/elastic/loop-jobs.sh /usr/bin/loop-jobs.sh
 ADD docker/elastic/conf/analytics.master.conf /etc/salt/master.d/salt-analytics.conf
-ADD docker/elastic/conf/logging.conf /etc/salt/master.d/logging.conf
-RUN mkdir -p /etc/salt/master.d \
-  && echo 'id: master-2' > /etc/salt/master.d/id.conf \
-  && echo 'open_mode: true' > /etc/salt/master.d/open-mode.conf
+ADD docker/elastic/conf/master-1.conf /etc/salt/master.d/master-1.conf
 
 CMD ["/usr/bin/supervisord","-c","/etc/supervisor/supervisord.conf"]
 
@@ -49,9 +46,6 @@ RUN apt install -y salt-minion
 ADD docker/elastic/conf/supervisord.minion.conf /etc/supervisor/conf.d/minion.conf
 ADD docker/elastic/conf/beacons.conf /etc/salt/minion.d/beacons.conf
 ADD docker/elastic/conf/analytics.minion.conf /etc/salt/minion.d/salt-analytics.conf
-ADD docker/elastic/conf/logging.conf /etc/salt/minion.d/logging.conf
-RUN mkdir -p /etc/salt/minion.d \
-  && echo 'id: minion-3' > /etc/salt/minion.d/id.conf \
-  && echo 'master: master-2' > /etc/salt/minion.d/master.conf
+ADD docker/elastic/conf/minion-3.conf /etc/salt/minion.d/minion-3.conf
 
 CMD ["/usr/bin/supervisord","-c","/etc/supervisor/supervisord.conf"]
