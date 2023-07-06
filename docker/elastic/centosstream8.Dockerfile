@@ -30,14 +30,13 @@ RUN ls -lah /src \
 
 FROM base as minion-2
 
+RUN dnf install -y salt-minion
 ADD docker/elastic/conf/supervisord.minion.conf /etc/supervisor/conf.d/minion.conf
 ADD docker/elastic/conf/beacons.conf /etc/salt/minion.d/beacons.conf
 ADD docker/elastic/conf/analytics.minion.conf /etc/salt/minion.d/salt-analytics.conf
-ADD docker/elastic/conf/demo-schedule.conf /etc/salt/minion.d/demo-schedule.conf
 ADD docker/elastic/conf/logging.conf /etc/salt/minion.d/logging.conf
 RUN mkdir -p /etc/salt/minion.d \
   && echo 'id: minion-2' > /etc/salt/minion.d/id.conf \
-  && echo 'master: master-1' > /etc/salt/minion.d/master.conf \
-  && dnf install -y salt-minion
+  && echo 'master: master-1' > /etc/salt/minion.d/master.conf
 
 CMD ["/usr/bin/supervisord","-c","/etc/supervisor/supervisord.conf"]

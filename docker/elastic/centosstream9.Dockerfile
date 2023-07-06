@@ -30,27 +30,28 @@ RUN ls -lah /src \
 
 FROM base as master-1
 
+RUN dnf install -y salt-master
 ADD docker/elastic/conf/supervisord.master.conf /etc/supervisor/conf.d/master.conf
+ADD docker/elastic/conf/supervisord.loop-jobs.conf /etc/supervisor/conf.d/loop-jobs.conf
+ADD docker/elastic/loop-jobs.sh /usr/bin/loop-jobs.sh
 ADD docker/elastic/conf/analytics.master.conf /etc/salt/master.d/salt-analytics.conf
 ADD docker/elastic/conf/logging.conf /etc/salt/master.d/logging.conf
 RUN mkdir -p /etc/salt/master.d \
   && echo 'id: master-1' > /etc/salt/master.d/id.conf \
-  && echo 'open_mode: true' > /etc/salt/master.d/open-mode.conf \
-  && dnf install -y salt-master
+  && echo 'open_mode: true' > /etc/salt/master.d/open-mode.conf
 
 CMD ["/usr/bin/supervisord","-c","/etc/supervisor/supervisord.conf"]
 
 
 FROM base as minion-1
 
+RUN dnf install -y salt-minion
 ADD docker/elastic/conf/supervisord.minion.conf /etc/supervisor/conf.d/minion.conf
 ADD docker/elastic/conf/beacons.conf /etc/salt/minion.d/beacons.conf
 ADD docker/elastic/conf/analytics.minion.conf /etc/salt/minion.d/salt-analytics.conf
-ADD docker/elastic/conf/demo-schedule.conf /etc/salt/minion.d/demo-schedule.conf
 ADD docker/elastic/conf/logging.conf /etc/salt/minion.d/logging.conf
 RUN mkdir -p /etc/salt/minion.d \
   && echo 'id: minion-1' > /etc/salt/minion.d/id.conf \
-  && echo 'master: master-1' > /etc/salt/minion.d/master.conf \
-  && dnf install -y salt-minion
+  && echo 'master: master-1' > /etc/salt/minion.d/master.conf
 
 CMD ["/usr/bin/supervisord","-c","/etc/supervisor/supervisord.conf"]
