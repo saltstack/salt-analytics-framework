@@ -9,9 +9,11 @@ import fnmatch
 import logging
 from typing import TYPE_CHECKING
 from typing import AsyncIterator
+from typing import Dict
 from typing import Type
 
 from saf.collect.event_bus import EventBusCollectedEvent
+from saf.collect.grains import GrainsCollectedEvent
 from saf.models import CollectedEvent
 from saf.models import PipelineRunContext
 from saf.models import ProcessConfigBase
@@ -45,6 +47,7 @@ class StateAggregateCollectedEvent(CollectedEvent):
     end_time: datetime
     duration: timedelta
     minion_id: str
+    grains: Dict[str, str]
 
 
 async def process(
@@ -80,10 +83,29 @@ async def process(
                 start_time = job_start_event.stamp
                 end_time = salt_event.stamp
                 duration = end_time - start_time
-                yield StateAggregateCollectedEvent.construct(
+                grains = ctx.cache.get("grains", {}).get(minion_id, {})
+                ret = StateAggregateCollectedEvent.construct(
                     data=data,
                     start_time=start_time,
                     end_time=end_time,
                     duration=duration,
                     minion_id=minion_id,
+                    grains=grains,
                 )
+                if grains:
+                    yield ret
+                else:
+                    if "waiting_for_grains" not in ctx.cache:
+                        ctx.cache["waiting_for_grains"] = set()
+                    ctx.cache["waiting_for_grains"].add(ret)
+    elif isinstance(event, GrainsCollectedEvent):
+        if "grains" not in ctx.cache:
+            ctx.cache["grains"] = {}
+        ctx.cache["grains"][event.minion] = event.grains
+        waiting = ctx.cache.get("waiting_for_grains")
+        if waiting:
+            to_remove = [agg_event for agg_event in waiting if agg_event.minion_id == event.minion]
+            for event_with_grains in to_remove:
+                event_with_grains.grains = event.grains
+                waiting.remove(event_with_grains)
+                yield event_with_grains
