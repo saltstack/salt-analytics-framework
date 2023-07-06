@@ -10,6 +10,7 @@ import logging
 from typing import TYPE_CHECKING
 from typing import AsyncIterator
 from typing import Dict
+from typing import Set
 from typing import Type
 
 from saf.collect.event_bus import EventBusCollectedEvent
@@ -25,22 +26,24 @@ if TYPE_CHECKING:
 log = logging.getLogger(__name__)
 
 
-class StateAggregateConfig(ProcessConfigBase):
+class JobAggregateConfig(ProcessConfigBase):
     """
     Job aggregate collector configuration.
     """
 
+    jobs: Set[str]
 
-def get_config_schema() -> Type[StateAggregateConfig]:
+
+def get_config_schema() -> Type[JobAggregateConfig]:
     """
     Get the job aggregate collect plugin configuration schema.
     """
-    return StateAggregateConfig
+    return JobAggregateConfig
 
 
-class StateAggregateCollectedEvent(CollectedEvent):
+class JobAggregateCollectedEvent(CollectedEvent):
     """
-    A collected event with aggregated state run information.
+    A collected event with aggregated job run information.
     """
 
     start_time: datetime
@@ -52,7 +55,7 @@ class StateAggregateCollectedEvent(CollectedEvent):
 
 async def process(
     *,
-    ctx: PipelineRunContext[StateAggregateConfig],
+    ctx: PipelineRunContext[JobAggregateConfig],
     event: CollectedEvent,
 ) -> AsyncIterator[CollectedEvent]:
     """
@@ -67,11 +70,15 @@ async def process(
         if fnmatch.fnmatch(tag, "salt/job/*/new"):
             jid = tag.split("/")[2]
             # We will probably want to make this condition configurable
-            if jid not in ctx.cache["watched_jids"]:
-                ctx.cache["watched_jids"][jid] = {
-                    "minions": set(salt_event.data["minions"]),
-                    "event": salt_event,
-                }
+            salt_func = data.get("fun", "")
+            for func_filter in ctx.config.jobs:
+                if fnmatch.fnmatch(salt_func, func_filter):
+                    if jid not in ctx.cache["watched_jids"]:
+                        ctx.cache["watched_jids"][jid] = {
+                            "minions": set(data["minions"]),
+                            "event": salt_event,
+                        }
+                    break
         elif fnmatch.fnmatch(tag, "salt/job/*/ret/*"):
             split_tag = tag.split("/")
             jid = split_tag[2]
@@ -87,7 +94,7 @@ async def process(
                 end_time = salt_event.stamp
                 duration = end_time - start_time
                 grains = ctx.cache.get("grains", {}).get(minion_id, {})
-                ret = StateAggregateCollectedEvent.construct(
+                ret = JobAggregateCollectedEvent.construct(
                     data=data,
                     start_time=start_time,
                     end_time=end_time,

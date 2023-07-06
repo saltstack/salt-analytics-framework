@@ -21,21 +21,21 @@ from saf.models import PipelineRunContext
 log = logging.getLogger(__name__)
 
 
-class SaltCommandConfig(CollectConfigBase):
+class GrainsConfig(CollectConfigBase):
     """
     Configuration schema for the beacons collect plugin.
     """
 
     targets: str = "*"
     grains: List[str]
-    interval: float = 20
+    interval: float = 5
 
 
-def get_config_schema() -> Type[SaltCommandConfig]:
+def get_config_schema() -> Type[GrainsConfig]:
     """
     Get the event bus collect plugin configuration schema.
     """
-    return SaltCommandConfig
+    return GrainsConfig
 
 
 class GrainsCollectedEvent(CollectedEvent):
@@ -47,9 +47,7 @@ class GrainsCollectedEvent(CollectedEvent):
     grains: Dict[str, str]
 
 
-async def collect(
-    *, ctx: PipelineRunContext[SaltCommandConfig]
-) -> AsyncIterator[GrainsCollectedEvent]:
+async def collect(*, ctx: PipelineRunContext[GrainsConfig]) -> AsyncIterator[GrainsCollectedEvent]:
     """
     Method called to collect events.
     """
@@ -59,6 +57,7 @@ async def collect(
     while True:
         ret = client.cmd(config.targets, "grains.item", arg=config.grains)
         for minion, grains in ret.items():
-            event = GrainsCollectedEvent(data=ret, minion=minion, grains=grains)
-            yield event
+            if grains:
+                event = GrainsCollectedEvent(data=ret, minion=minion, grains=grains)
+                yield event
         await asyncio.sleep(config.interval)
