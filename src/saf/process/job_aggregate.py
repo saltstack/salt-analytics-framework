@@ -14,6 +14,8 @@ from typing import Dict
 from typing import Set
 from typing import Type
 
+from pydantic import Field
+
 from saf.collect.event_bus import EventBusCollectedEvent
 from saf.collect.grains import GrainsCollectedEvent
 from saf.models import CollectedEvent
@@ -32,7 +34,7 @@ class JobAggregateConfig(ProcessConfigBase):
     Job aggregate collector configuration.
     """
 
-    jobs: Set[str]
+    jobs: Set[str] = Field(default_factory=set)
 
 
 def get_config_schema() -> Type[JobAggregateConfig]:
@@ -74,7 +76,10 @@ async def process(
             jid = tag.split("/")[2]
             # We will probably want to make this condition configurable
             salt_func = data.get("fun", "")
-            for func_filter in ctx.config.jobs:
+            matching_jobs = ctx.config.jobs
+            if not matching_jobs:
+                matching_jobs.add("*")
+            for func_filter in matching_jobs:
                 if fnmatch.fnmatch(salt_func, func_filter):
                     if jid not in ctx.cache["watched_jids"]:
                         ctx.cache["watched_jids"][jid] = {
