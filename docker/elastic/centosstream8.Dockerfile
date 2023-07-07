@@ -11,7 +11,7 @@ RUN dnf update -y \
     && dnf install -y multitail supervisor
 
 RUN mkdir -p /etc/supervisor/conf.d/
-ADD docker/elastic/conf/supervisord.conf /etc/supervisor/supervisord.conf
+ADD docker/elastic/conf/supervisord.conf /etc/supervisord.conf
 
 RUN rpm --import https://repo.saltproject.io/salt/py3/redhat/9/x86_64/SALT-PROJECT-GPG-PUBKEY-2023.pub \
   && curl -fsSL https://repo.saltproject.io/salt/py3/redhat/9/x86_64/3006.repo | tee /etc/yum.repos.d/salt.repo \
@@ -36,4 +36,4 @@ ADD docker/elastic/conf/beacons.conf /etc/salt/minion.d/beacons.conf
 ADD docker/elastic/conf/analytics.minion.conf /etc/salt/minion.d/salt-analytics.conf
 ADD docker/elastic/conf/minion-2.conf /etc/salt/minion.d/minion-2.conf
 
-CMD ["/usr/bin/supervisord","-c","/etc/supervisor/supervisord.conf"]
+CMD ["/usr/bin/supervisord","-c","/etc/supervisord.conf"]
