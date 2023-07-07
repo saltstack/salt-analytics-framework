@@ -52,4 +52,4 @@ async def collect(
     salt_event: SaltEvent
     log.info("The event bus collect plugin is configured to listen to tags: %s", config.tags)
     async for salt_event in eventbus.iter_events(opts=ctx.salt_config.copy(), tags=config.tags):
-        yield EventBusCollectedEvent(salt_event=salt_event, data={"tag": salt_event.tag})
+        yield EventBusCollectedEvent.construct(salt_event=salt_event, data={"tag": salt_event.tag})

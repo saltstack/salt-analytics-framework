@@ -34,7 +34,7 @@ class JobAggregateConfig(ProcessConfigBase):
     Job aggregate collector configuration.
     """
 
-    jobs: Set[str] = Field(default_factory=set)
+    jobs: Set[str] = Field(default_factory=lambda: {"*"})
 
 
 def get_config_schema() -> Type[JobAggregateConfig]:
@@ -59,7 +59,7 @@ class JobAggregateCollectedEvent(CollectedEvent):
 async def process(
     *,
     ctx: PipelineRunContext[JobAggregateConfig],
-    event: CollectedEvent,
+    event: EventBusCollectedEvent | GrainsCollectedEvent,
 ) -> AsyncIterator[CollectedEvent]:
     """
     Aggregate received events, otherwise store in cache.
@@ -72,15 +72,20 @@ async def process(
         data = salt_event.data
         if "watched_jids" not in ctx.cache:
             ctx.cache["watched_jids"] = {}
+        if "waiting_for_grains" not in ctx.cache:
+            ctx.cache["waiting_for_grains"] = {}
         if fnmatch.fnmatch(tag, "salt/job/*/new"):
             jid = tag.split("/")[2]
             # We will probably want to make this condition configurable
             salt_func = data.get("fun", "")
-            matching_jobs = ctx.config.jobs
-            if not matching_jobs:
-                matching_jobs.add("*")
-            for func_filter in matching_jobs:
+            for func_filter in ctx.config.jobs:
                 if fnmatch.fnmatch(salt_func, func_filter):
+                    log.debug(
+                        "The job with JID %r and func %r matched function filter %r",
+                        jid,
+                        salt_func,
+                        func_filter,
+                    )
                     if jid not in ctx.cache["watched_jids"]:
                         ctx.cache["watched_jids"][jid] = {
                             "minions": set(data["minions"]),
@@ -113,17 +118,18 @@ async def process(
                 if grains:
                     yield ret
                 else:
-                    if "waiting_for_grains" not in ctx.cache:
-                        ctx.cache["waiting_for_grains"] = set()
-                    ctx.cache["waiting_for_grains"].add(ret)
+                    if minion_id not in ctx.cache["waiting_for_grains"]:
+                        ctx.cache["waiting_for_grains"][minion_id] = []
+                    ctx.cache["waiting_for_grains"][minion_id].append(ret)
+            else:
+                log.debug(
+                    "The JID %r was not found in the 'watched_jids' processor cache. Ignoring", jid
+                )
     elif isinstance(event, GrainsCollectedEvent):
         if "grains" not in ctx.cache:
             ctx.cache["grains"] = {}
         ctx.cache["grains"][event.minion] = event.grains
-        waiting = ctx.cache.get("waiting_for_grains")
-        if waiting:
-            to_remove = [agg_event for agg_event in waiting if agg_event.minion_id == event.minion]
-            for event_with_grains in to_remove:
-                event_with_grains.grains = event.grains
-                waiting.remove(event_with_grains)
-                yield event_with_grains
+        waiting_events = ctx.cache["waiting_for_grains"].pop(event.minion, ())
+        for event_with_grains in waiting_events:
+            event_with_grains.grains = event.grains
+            yield event_with_grains

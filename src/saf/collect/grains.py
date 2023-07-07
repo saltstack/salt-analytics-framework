@@ -7,11 +7,13 @@ from __future__ import annotations
 
 import asyncio
 import logging
+from typing import Any
 from typing import AsyncIterator
 from typing import Dict
 from typing import List
 from typing import Type
 
+from pydantic import Field
 from salt.client import LocalClient
 
 from saf.models import CollectConfigBase
@@ -26,9 +28,9 @@ class GrainsConfig(CollectConfigBase):
     Configuration schema for the beacons collect plugin.
     """
 
-    targets: str = "*"
+    targets: str = Field(default="*")
     grains: List[str]
-    interval: float = 5
+    interval: float = Field(default=5)
 
 
 def get_config_schema() -> Type[GrainsConfig]:
@@ -44,7 +46,7 @@ class GrainsCollectedEvent(CollectedEvent):
     """
 
     minion: str
-    grains: Dict[str, str]
+    grains: Dict[str, Any]
 
 
 async def collect(*, ctx: PipelineRunContext[GrainsConfig]) -> AsyncIterator[GrainsCollectedEvent]:
@@ -58,6 +60,6 @@ async def collect(*, ctx: PipelineRunContext[GrainsConfig]) -> AsyncIterator[Gra
         ret = client.cmd(config.targets, "grains.item", arg=config.grains)
         for minion, grains in ret.items():
             if grains:
-                event = GrainsCollectedEvent(data=ret, minion=minion, grains=grains)
+                event = GrainsCollectedEvent.construct(data=ret, minion=minion, grains=grains)
                 yield event
         await asyncio.sleep(config.interval)
