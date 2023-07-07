@@ -46,9 +46,11 @@ async def process(
     data = event.dict()
     data.pop("data", None)
     data.update(event.data)
-    # Have the return field always be a JSON string
-    if "return" in data:
-        data["return"] = json.dumps(data["return"])
+    # Some field must be cast to JSON strings or EL will complain about
+    # different types
+    for key in ("fun_args", "return"):
+        if key in data:
+            data[key] = json.dumps(data[key])
     data["@timestamp"] = event.start_time
     evt = ElasticSearchEvent.construct(index="salt_jobs", data=data)
     log.debug("ElasticSearchEvent: %s", pprint.pformat(evt.dict()))
