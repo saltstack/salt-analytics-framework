@@ -1,0 +1,2 @@
+nginx:
+  pkg.removed

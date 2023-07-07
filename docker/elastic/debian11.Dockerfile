@@ -36,6 +36,7 @@ ADD docker/elastic/conf/supervisord.loop-jobs.conf /etc/supervisor/conf.d/loop-j
 ADD docker/elastic/loop-jobs.sh /usr/bin/loop-jobs.sh
 ADD docker/elastic/conf/analytics.master.conf /etc/salt/master.d/salt-analytics.conf
 ADD docker/elastic/conf/master-1.conf /etc/salt/master.d/master-1.conf
+ADD docker/elastic/state-tree/*.sls /srv/salt/
 
 CMD ["/usr/bin/supervisord","-c","/etc/supervisor/supervisord.conf"]
 
