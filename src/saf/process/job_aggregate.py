@@ -64,16 +64,16 @@ async def process(
     """
     Aggregate received events, otherwise store in cache.
     """
+    if "watched_jids" not in ctx.cache:
+        ctx.cache["watched_jids"] = {}
+    if "waiting_for_grains" not in ctx.cache:
+        ctx.cache["waiting_for_grains"] = {}
     if isinstance(event, EventBusCollectedEvent):
         log.debug("Event Bus Collected Event:\n%s", pprint.pformat(event.dict()))
         salt_event = event.salt_event
         log.debug("Event Bus Collected Salt Event:\n%s", pprint.pformat(salt_event))
         tag = salt_event.tag
         data = salt_event.data
-        if "watched_jids" not in ctx.cache:
-            ctx.cache["watched_jids"] = {}
-        if "waiting_for_grains" not in ctx.cache:
-            ctx.cache["waiting_for_grains"] = {}
         if fnmatch.fnmatch(tag, "salt/job/*/new"):
             jid = tag.split("/")[2]
             # We will probably want to make this condition configurable
