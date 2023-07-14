@@ -23,7 +23,7 @@ from saf.models import ProcessConfigBase
 
 log = logging.getLogger(__name__)
 
-if sys.version_info < (3, 9, 2):
+if sys.version_info < (3, 12):
     from typing_extensions import TypedDict
 else:
     from typing import TypedDict  # type: ignore[attr-defined,no-redef]

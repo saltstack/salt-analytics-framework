@@ -24,7 +24,7 @@ def config(salt_role):
         loaded_config = salt.config.master_config(None)
         loaded_config["id"] = loaded_config["master_id"] = salt_id
 
-    return AnalyticsConfig.parse_obj(
+    return AnalyticsConfig.model_validate(
         {
             "collectors": {
                 "test": {
@@ -62,7 +62,7 @@ def pipeline(config):
 
 @pytest.fixture(scope="module")
 def ctx(pipeline):
-    return PipelineRunContext.construct(config=pipeline.collect_configs[0])
+    return PipelineRunContext(config=pipeline.collect_configs[0])
 
 
 def test_info(salt_role, ctx):

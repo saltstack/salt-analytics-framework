@@ -24,10 +24,12 @@ from typing import Union
 import salt.utils.network
 import salt.version
 from pydantic import BaseModel
+from pydantic import ConfigDict
 from pydantic import Field
 from pydantic import PrivateAttr
-from pydantic import validator
-from pydantic.generics import GenericModel
+from pydantic import field_validator
+from pydantic.functional_validators import PlainValidator
+from typing_extensions import Annotated
 
 import saf
 from saf.plugins import PluginsList
@@ -44,8 +46,7 @@ class NonMutableModel(BaseModel):
     Base class for non mutable models.
     """
 
-    class Config:
-        allow_mutation = False
+    model_config = ConfigDict(frozen=True)
 
 
 NMC = TypeVar("NMC", bound="NonMutableConfig")
@@ -58,16 +59,14 @@ class NonMutableConfig(BaseModel):
 
     _parent: AnalyticsConfig = PrivateAttr()
 
+    model_config = ConfigDict(frozen=True)
+
     @property
     def parent(self: NMC) -> AnalyticsConfig:
         """
         Return the parent configuration schema.
         """
         return self._parent
-
-    class Config:
-        allow_mutation = False
-        underscore_attrs_are_private = True
 
 
 PCMI = TypeVar("PCMI", bound="PluginConfigMixin")
@@ -105,33 +104,6 @@ class CollectConfigBase(PluginConfigMixin):
     Base config schema for collect plugins.
     """
 
-    def __new__(
-        cls: Type[CCB],
-        plugin: str,
-        **kwargs: Dict[str, Any],
-    ) -> CollectConfigBase:
-        """
-        Swap the ``cls`` to instantiate if necessary.
-
-        If the targeted plugin provides a ``get_config_schema`` function, then this
-        class instance will use that class instead of the default one
-        """
-        try:
-            plugin_module = PluginsList.instance().collectors[plugin]
-            try:
-                get_schema_func = plugin_module.get_config_schema
-                cls = get_schema_func()  # pylint: disable=self-cls-assignment
-            except AttributeError:
-                log.debug(
-                    "The %r collect plugin does not provide a 'get_config_schema' function, defaulting to %s",
-                    plugin,
-                    cls,
-                )
-        except KeyError:
-            pass
-        instance: CollectConfigBase = PluginConfigMixin.__new__(cls)
-        return instance
-
     @property
     def loaded_plugin(self: CCB) -> ModuleType:
         """
@@ -148,33 +120,6 @@ class ProcessConfigBase(PluginConfigMixin):
     Base config schema for process plugins.
     """
 
-    def __new__(
-        cls: Type[PCB],
-        plugin: str,
-        **kwargs: Dict[str, Any],
-    ) -> ProcessConfigBase:
-        """
-        Swap the ``cls`` to instantiate if necessary.
-
-        If the targeted plugin provides a ``get_config_schema`` function, then this
-        class instance will use that class instead of the default one
-        """
-        try:
-            plugin_module = PluginsList.instance().processors[plugin]
-            try:
-                get_schema_func = plugin_module.get_config_schema
-                cls = get_schema_func()  # pylint: disable=self-cls-assignment
-            except AttributeError:
-                log.debug(
-                    "The %r process plugin does not provide a 'get_config_schema' function, defaulting to %s",
-                    plugin,
-                    cls,
-                )
-        except KeyError:
-            pass
-        instance: ProcessConfigBase = PluginConfigMixin.__new__(cls)
-        return instance
-
     @property
     def loaded_plugin(self: PCB) -> ModuleType:
         """
@@ -190,33 +135,6 @@ class ForwardConfigBase(PluginConfigMixin):
     """
     Base config schema for forward plugins.
     """
-
-    def __new__(
-        cls: Type[FCB],
-        plugin: str,
-        **kwargs: Dict[str, Any],
-    ) -> ForwardConfigBase:
-        """
-        Swap the ``cls`` to instantiate if necessary.
-
-        If the targeted plugin provides a ``get_config_schema`` function, then this
-        class instance will use that class instead of the default one
-        """
-        try:
-            plugin_module = PluginsList.instance().forwarders[plugin]
-            try:
-                get_schema_func = plugin_module.get_config_schema
-                cls = get_schema_func()  # pylint: disable=self-cls-assignment
-            except AttributeError:
-                log.debug(
-                    "The %r forward plugin does not provide a 'get_config_schema' function, defaulting to %s",
-                    plugin,
-                    cls,
-                )
-        except KeyError:
-            pass
-        instance: ForwardConfigBase = PluginConfigMixin.__new__(cls)
-        return instance
 
     @property
     def loaded_plugin(self: FCB) -> ModuleType:
@@ -253,18 +171,78 @@ class PipelineConfig(NonMutableConfig):
 AC = TypeVar("AC", bound="AnalyticsConfig")
 
 
+def _instantiate_collector(data: dict[str, Any]) -> CollectConfigBase:
+    plugin_cls = CollectConfigBase
+    plugin = data["plugin"]
+    plugin_module = PluginsList.instance().collectors[plugin]
+    try:
+        initial_plugin_cls = plugin_module.get_config_schema()
+        plugin_cls = initial_plugin_cls.model_rebuild() or initial_plugin_cls
+    except AttributeError:
+        log.debug(
+            "The %r collect plugin does not provide a 'get_config_schema' function, defaulting to %s",
+            plugin,
+            plugin_cls,
+        )
+
+    return plugin_cls.model_validate(data)
+
+
+CollectConfig = Annotated[CollectConfigBase, PlainValidator(_instantiate_collector)]
+
+
+def _instantiate_processor(data: dict[str, Any]) -> ProcessConfigBase:
+    plugin_cls = ProcessConfigBase
+    plugin = data["plugin"]
+    plugin_module = PluginsList.instance().processors[plugin]
+    try:
+        initial_plugin_cls = plugin_module.get_config_schema()
+        plugin_cls = initial_plugin_cls.model_rebuild() or initial_plugin_cls
+    except AttributeError:
+        log.debug(
+            "The %r process plugin does not provide a 'get_config_schema' function, defaulting to %s",
+            plugin,
+            plugin_cls,
+        )
+
+    return plugin_cls.model_validate(data)
+
+
+ProcessConfig = Annotated[ProcessConfigBase, PlainValidator(_instantiate_processor)]
+
+
+def _instantiate_forwarder(data: dict[str, Any]) -> ForwardConfigBase:
+    plugin_cls = ForwardConfigBase
+    plugin = data["plugin"]
+    plugin_module = PluginsList.instance().forwarders[plugin]
+    try:
+        initial_plugin_cls = plugin_module.get_config_schema()
+        plugin_cls = initial_plugin_cls.model_rebuild() or initial_plugin_cls
+    except AttributeError:
+        log.debug(
+            "The %r forward plugin does not provide a 'get_config_schema' function, defaulting to %s",
+            plugin,
+            plugin_cls,
+        )
+
+    return plugin_cls.model_validate(data)
+
+
+ForwardConfig = Annotated[ForwardConfigBase, PlainValidator(_instantiate_forwarder)]
+
+
 class AnalyticsConfig(BaseModel):
     """
     Salt Analytics Framework configuration.
     """
 
-    collectors: Dict[str, CollectConfigBase]
-    processors: Dict[str, ProcessConfigBase] = Field(default_factory=dict)
-    forwarders: Dict[str, ForwardConfigBase]
+    collectors: Dict[str, CollectConfig]
+    processors: Dict[str, ProcessConfig] = Field(default_factory=dict)
+    forwarders: Dict[str, ForwardConfig]
     pipelines: Dict[str, PipelineConfig]
     salt_config: Dict[str, Any]
 
-    @validator("pipelines", pre=True)
+    @field_validator("pipelines", mode="before")
     @classmethod
     def _validate_pipelines(
         cls: Type[AC], pipelines: Dict[str, Dict[str, Any]]
@@ -288,11 +266,11 @@ class AnalyticsConfig(BaseModel):
             pipelines[name].setdefault("enabled", True)
         return pipelines
 
-    def _init_private_attributes(self: AC) -> None:
+    def model_post_init(self: AC, __context: Any) -> None:  # noqa: ANN401
         """
         Set the `_parent` attribute on child schemas.
         """
-        super()._init_private_attributes()
+        super().model_post_init(__context)
         # Allow plugin configurations to access the full configuration, this instance
         for entry in (self.collectors, self.processors, self.forwarders, self.pipelines):
             if entry is None:
@@ -334,7 +312,7 @@ class SaltEvent(NonMutableModel):
             _stamp = datetime.strptime(stamp, "%Y-%m-%dT%H:%M:%S.%f").replace(tzinfo=timezone.utc)
         return _stamp
 
-    @validator("stamp")
+    @field_validator("stamp")
     @classmethod
     def _validate_stamp(cls: Type[SE], value: Union[str, datetime]) -> datetime:
         if isinstance(value, datetime):
@@ -345,7 +323,7 @@ class SaltEvent(NonMutableModel):
 PipelineRunContextConfigType = TypeVar("PipelineRunContextConfigType", bound=NonMutableConfig)
 
 
-class RuntimeAnalyticsInfo(GenericModel):
+class RuntimeAnalyticsInfo(NonMutableModel):
     """
     Salt analytics runtime information.
     """
@@ -353,7 +331,7 @@ class RuntimeAnalyticsInfo(GenericModel):
     version: str
 
 
-class RuntimeSaltInfo(GenericModel):
+class RuntimeSaltInfo(NonMutableModel):
     """
     Salt runtime information.
     """
@@ -364,7 +342,7 @@ class RuntimeSaltInfo(GenericModel):
     version_info: Tuple[int, ...]
 
 
-class RuntimeInfo(GenericModel):
+class RuntimeInfo(NonMutableModel):
     """
     Salt analytics pipelines runtime information.
     """
@@ -373,7 +351,7 @@ class RuntimeInfo(GenericModel):
     analytics: RuntimeAnalyticsInfo
 
 
-class PipelineRunContext(GenericModel, Generic[PipelineRunContextConfigType]):
+class PipelineRunContext(NonMutableModel, Generic[PipelineRunContextConfigType]):
     """
     Class representing a pipeline run context.
     """
@@ -412,14 +390,14 @@ class PipelineRunContext(GenericModel, Generic[PipelineRunContextConfigType]):
                 salt_id = salt.utils.network.get_fqhostname()
             if salt_id is None:
                 salt_id = platform.node()
-            self._info = RuntimeInfo.construct(
-                salt=RuntimeSaltInfo.construct(
+            self._info = RuntimeInfo.model_construct(
+                salt=RuntimeSaltInfo.model_construct(
                     id=salt_id,
                     role=salt_config["__role"],
                     version=salt.version.__version__,
                     version_info=salt.version.__saltstack_version__.info,
                 ),
-                analytics=RuntimeAnalyticsInfo.construct(
+                analytics=RuntimeAnalyticsInfo.model_construct(
                     version=saf.__version__,
                 ),
             )

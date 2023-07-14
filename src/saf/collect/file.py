@@ -22,7 +22,7 @@ from saf.models import CollectConfigBase
 from saf.models import CollectedEvent
 from saf.models import PipelineRunContext
 
-if sys.version_info < (3, 9, 2):
+if sys.version_info < (3, 12):
     from typing_extensions import TypedDict
 else:
     from typing import TypedDict  # type: ignore[attr-defined,no-redef]

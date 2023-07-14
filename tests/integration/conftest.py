@@ -66,7 +66,7 @@ def pipelines_config(collectors_config, processors_config, forwarders_config, pi
 def analytics_config(
     collectors_config, processors_config, forwarders_config, pipelines_config, pipeline_name
 ):
-    return AnalyticsConfig.parse_obj(
+    return AnalyticsConfig.model_validate(
         {
             "collectors": collectors_config,
             "processors": processors_config,

@@ -56,10 +56,10 @@ async def forward(
         dest = config.path / config.filename
         dest.touch()
         async with aiofiles.open(dest, "a", encoding="utf-8") as wfh:
-            wrote = await wfh.write(f"{event.json(indent=indent)}\n")
+            wrote = await wfh.write(f"{event.model_dump_json(indent=indent)}\n")
     else:
         file_count = len(list(config.path.iterdir()))
         dest = config.path / f"event-dump-{file_count + 1}.json"
         async with aiofiles.open(dest, "w", encoding="utf-8") as wfh:
-            wrote = await wfh.write(event.json(indent=indent))
+            wrote = await wfh.write(event.model_dump_json(indent=indent))
     log.debug("Wrote %s bytes to %s", wrote, dest)

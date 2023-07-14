@@ -27,10 +27,10 @@ class ShannonMaskProcessConfig(ProcessConfigBase):
     Configuration schema for the Shannon mask processor plugin.
     """
 
-    mask_str: str = "HIGH-ENTROPY"
-    mask_char: Optional[str] = Field(min_length=1, max_length=1)
-    mask_prefix: str = "<:"
-    mask_suffix: str = ":>"
+    mask_str: str = Field("HIGH-ENTROPY")
+    mask_char: Optional[str] = Field(None, min_length=1, max_length=1)
+    mask_prefix: str = Field("<:")
+    mask_suffix: str = Field(":>")
     h_threshold: float = Field(0.9, ge=0.0, le=1.0)
     length_threshold: int = Field(16, gt=1)
     delimeter: str = Field(" ", min_length=1, max_length=1)
@@ -125,7 +125,7 @@ async def process(
     Method called to mask the data based on normalized Shannon index values.
     """
     config = ctx.config
-    log.debug("Processing event in shannon_mask: %s", event.json())
-    event_dict = event.dict()
+    log.debug("Processing event in shannon_mask: %s", event.model_dump_json())
+    event_dict = event.model_dump()
     processed_event_dict = _shannon_process(event_dict, config)
-    yield event.parse_obj(processed_event_dict)
+    yield event.model_validate(processed_event_dict)

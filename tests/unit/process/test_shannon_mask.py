@@ -108,8 +108,8 @@ def test__shannon_process(data: dict[str, Any], sub_data: dict[str, Any]) -> Non
     expected = SubclassedCollectedEvent(
         data=masked_data, new_field=CollectedEvent(data=masked_sub_data)
     )
-    masked_event_dict = _shannon_process(event.dict(), config)
-    masked_event = event.parse_obj(masked_event_dict)
+    masked_event_dict = _shannon_process(event.model_dump(), config)
+    masked_event = event.model_validate(masked_event_dict)
     assert masked_event.data == expected.data
     assert masked_event.new_field.data == expected.new_field.data
 
@@ -134,7 +134,7 @@ def test__shannon_process_with_mask_char(data: dict[str, Any], sub_data: dict[st
     expected = SubclassedCollectedEvent(
         data=masked_data, new_field=CollectedEvent(data=masked_sub_data)
     )
-    masked_event_dict = _shannon_process(event.dict(), config)
-    masked_event = event.parse_obj(masked_event_dict)
+    masked_event_dict = _shannon_process(event.model_dump(), config)
+    masked_event = event.model_validate(masked_event_dict)
     assert masked_event.data == expected.data
     assert masked_event.new_field.data == expected.new_field.data

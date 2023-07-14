@@ -33,9 +33,9 @@ class RegexMaskProcessConfig(ProcessConfigBase):
     """
 
     rules: Dict[str, str]
-    mask_char: Optional[str] = Field(min_length=1, max_length=1)
-    mask_prefix: str = "<:"
-    mask_suffix: str = ":>"
+    mask_char: Optional[str] = Field(None, min_length=1, max_length=1)
+    mask_prefix: str = Field(default="<:")
+    mask_suffix: str = Field(default=":>")
 
 
 def get_config_schema() -> Type[ProcessConfigBase]:
@@ -103,7 +103,7 @@ async def process(
     Method called to mask the data based on provided regex rules.
     """
     config = ctx.config
-    log.debug("Processing event in regex_mask: %s", event.json())
-    event_dict = event.dict()
+    log.debug("Processing event in regex_mask: %s", event.model_dump_json())
+    event_dict = event.model_dump()
     processed_event_dict = _regex_process(event_dict, config)
-    yield event.parse_obj(processed_event_dict)
+    yield event.model_validate(processed_event_dict)

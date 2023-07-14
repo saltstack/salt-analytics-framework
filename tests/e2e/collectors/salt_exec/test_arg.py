@@ -70,7 +70,8 @@ def test_pipeline(analytics_events_dump_directory: pathlib.Path):
         pytest.fail(f"Failed to find dumped events in {analytics_events_dump_directory}")
 
     contents = [
-        CollectedEvent.parse_obj(json.loads(i)) for i in dumpfile.read_text().strip().split("\n")
+        CollectedEvent.model_validate(json.loads(i))
+        for i in dumpfile.read_text().strip().split("\n")
     ]
     for event in contents:
         assert event.data["ret"] == {
