@@ -6,4 +6,4 @@ sphinx-copybutton
 sphinx-prompt
 sphinxcontrib-spelling
 sphinxcontrib-towncrier >= 0.2.1a0
-autodoc_pydantic
+#autodoc_pydantic

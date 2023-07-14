@@ -84,7 +84,7 @@ extensions = [
     "sphinx_copybutton",
     "sphinxcontrib.spelling",
     "sphinxcontrib.towncrier",
-    "sphinxcontrib.autodoc_pydantic",
+    # "sphinxcontrib.autodoc_pydantic",
 ]
 
 # Add any paths that contain templates here, relative to this directory.
