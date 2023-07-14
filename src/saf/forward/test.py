@@ -18,7 +18,7 @@ from typing import Any
 from typing import Optional
 from typing import Type
 
-from pydantic import root_validator
+from pydantic import model_validator
 
 from saf.models import CollectedEvent
 from saf.models import ForwardConfigBase
@@ -38,7 +38,7 @@ class TestForwardConfig(ForwardConfigBase):
     dump_event: bool = False
     add_event_to_shared_cache: bool = False
 
-    @root_validator
+    @model_validator(mode="before")
     @classmethod
     def _check_mutually_exclusive_parameters(
         cls: Type[TestForwardConfig], values: dict[str, Any]
@@ -81,7 +81,7 @@ async def forward(
     elif config.path:
         if config.message:
             if config.dump_event:
-                dump_text = json.dumps({config.message: event.dict()})
+                dump_text = json.dumps({config.message: event.model_dump()})
             else:
                 dump_text = config.message
         elif config.dump_event:

@@ -19,7 +19,7 @@ from typing import Type
 from typing import TypeVar
 from typing import Union
 
-from pydantic import validator
+from pydantic import field_validator
 
 from saf.models import CollectConfigBase
 from saf.models import CollectedEvent
@@ -60,7 +60,7 @@ class BeaconCollectedEvent(CollectedEvent):
             _stamp = datetime.strptime(stamp, "%Y-%m-%dT%H:%M:%S.%f").replace(tzinfo=timezone.utc)
         return _stamp
 
-    @validator("stamp")
+    @field_validator("stamp")
     @classmethod
     def _validate_stamp(cls: Type[BCE], value: Union[str, datetime]) -> datetime:
         if isinstance(value, datetime):

@@ -67,7 +67,7 @@ def start() -> None:
     """
     loop = asyncio.new_event_loop()
     asyncio.set_event_loop(loop)
-    config = AnalyticsConfig.parse_obj(get_config_dict())
+    config = AnalyticsConfig.model_validate(get_config_dict())
     manager = Manager(config)
     aiorun.run(
         manager.run(),

@@ -19,7 +19,7 @@ async def test_count():
         count=count,
     )
     config._name = "test-test"  # noqa: SLF001
-    ctx: PipelineRunContext[test.TestCollectConfig] = PipelineRunContext.construct(config=config)
+    ctx: PipelineRunContext[test.TestCollectConfig] = PipelineRunContext(config=config)
     events = []
     async for event in test.collect(ctx=ctx):
         events.append(event)
@@ -37,7 +37,7 @@ async def test_interval():
         count=count,
     )
     config._name = "test-test"  # noqa: SLF001
-    ctx: PipelineRunContext[test.TestCollectConfig] = PipelineRunContext.construct(config=config)
+    ctx: PipelineRunContext[test.TestCollectConfig] = PipelineRunContext(config=config)
     events = []
     start = loop.time()
     async for event in test.collect(ctx=ctx):

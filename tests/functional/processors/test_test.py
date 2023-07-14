@@ -15,7 +15,7 @@ async def test_no_child_events():
         plugin="test",
     )
     config._name = "test-process"  # noqa: SLF001
-    ctx: PipelineRunContext[test.TestProcessConfig] = PipelineRunContext.construct(config=config)
+    ctx: PipelineRunContext[test.TestProcessConfig] = PipelineRunContext(config=config)
     events = []
     async for event in test.process(ctx=ctx, event=initial_event):
         events.append(event)
@@ -31,7 +31,7 @@ async def test_child_events_count():
         child_events_count=count,
     )
     config._name = "test-process"  # noqa: SLF001
-    ctx: PipelineRunContext[test.TestProcessConfig] = PipelineRunContext.construct(config=config)
+    ctx: PipelineRunContext[test.TestProcessConfig] = PipelineRunContext(config=config)
     events = []
     async for event in test.process(ctx=ctx, event=initial_event):
         events.append(event)

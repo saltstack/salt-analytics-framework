@@ -112,19 +112,19 @@ class Pipeline:
     def _build_contexts(self: P) -> None:
         for collect_config in self.collect_configs:
             if collect_config.name not in self.collect_ctxs:
-                self.collect_ctxs[collect_config.name] = PipelineRunContext.construct(
+                self.collect_ctxs[collect_config.name] = PipelineRunContext.model_construct(
                     config=collect_config,
                     shared_cache=self.shared_cache,
                 )
         for process_config in self.process_configs:
             if process_config.name not in self.process_ctxs:
-                self.process_ctxs[process_config.name] = PipelineRunContext.construct(
+                self.process_ctxs[process_config.name] = PipelineRunContext.model_construct(
                     config=process_config,
                     shared_cache=self.shared_cache,
                 )
         for forward_config in self.forward_configs:
             if forward_config.name not in self.forward_ctxs:
-                self.forward_ctxs[forward_config.name] = PipelineRunContext.construct(
+                self.forward_ctxs[forward_config.name] = PipelineRunContext.model_construct(
                     config=forward_config,
                     shared_cache=self.shared_cache,
                 )
@@ -183,7 +183,7 @@ class Pipeline:
                     self.forward_ctxs[forward_config.name],
                     # We pass a copy of the event so that any forwarder get's the
                     # same event and is free to modify it at will
-                    event.copy(),
+                    event.model_copy(),
                 ),
             )
         await asyncio.gather(*coros)
