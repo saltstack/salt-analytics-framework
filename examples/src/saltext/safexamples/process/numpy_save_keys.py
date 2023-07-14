@@ -10,8 +10,6 @@ import pathlib  # noqa: TCH003
 from typing import AsyncIterator
 from typing import Type
 
-import numpy as np
-
 from saf.models import CollectedEvent
 from saf.models import PipelineRunContext
 from saf.models import ProcessConfigBase
@@ -42,6 +40,8 @@ async def process(
     """
     Save the keys using numpy.
     """
+    import numpy as np
+
     config = ctx.config
     if not config.base_path.exists():
         config.base_path.mkdir(parents=True)
