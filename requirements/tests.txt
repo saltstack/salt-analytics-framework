@@ -1,5 +1,5 @@
 -r base.txt
+-r jupyter.txt
 pytest>=6.0.0
 pytest-salt-factories==1.0.0rc21
 pytest-asyncio
-papermill

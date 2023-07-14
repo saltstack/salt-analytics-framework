@@ -14,8 +14,6 @@ from typing import List
 from typing import Optional
 from typing import Type
 
-import papermill
-
 from saf.models import CollectedEvent
 from saf.models import PipelineRunContext
 from saf.models import ProcessConfigBase
@@ -51,6 +49,8 @@ async def process(
     """
     Run the jupyter notebook, doing papermill parameterizing using the event data given.
     """
+    import papermill
+
     output = ctx.config.output_notebook or ctx.config.notebook
     params = ctx.config.params.copy()
     for key in ctx.config.input_keys:
