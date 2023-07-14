@@ -1,0 +1,1 @@
+Add `saf.utils.salt.MasterClient` and `saf.utils.salt.MinionClient` which are asyncio cooperative
