@@ -12,8 +12,6 @@ import random
 from typing import AsyncIterator
 from typing import Type
 
-from tensorflow import keras
-
 from saf.models import CollectConfigBase
 from saf.models import CollectedEvent
 from saf.models import PipelineRunContext
@@ -41,6 +39,8 @@ async def collect(*, ctx: PipelineRunContext[MNISTDigitsConfig]) -> AsyncIterato
     """
     Periodically yield a random MNIST test digit and it's desired output.
     """
+    from tensorflow import keras
+
     file_path = pathlib.Path(ctx.config.path)
     log.debug("Downloading the MNIST digits dataset to %s", file_path)
     (x_train, y_train), (x_test, y_test) = keras.datasets.mnist.load_data(path=file_path)
