@@ -120,6 +120,14 @@ format = "grouped"
 "src/saf/saltext/**/*.py" = [
   "N807",   # Function name should not start and end with `__`
 ]
+"src/saf/utils/salt.py" = [
+  "ANN101",   # Missing type annotation for `self` in method
+  "PLR0913",  # Too many arguments to function call (10 > 5)
+  "FBT001",   # Boolean positional arg in function definition
+  "FBT002",   # Boolean default value in function definition
+  "ANN401",   # Dynamically typed expressions (typing.Any) are disallowed in `**kwargs`
+  "RET504",   # Unnecessary variable assignment before `return` statement
+]
 "setup.py" = [
   "D",
 ]
