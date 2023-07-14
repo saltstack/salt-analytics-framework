@@ -133,6 +133,7 @@ dmypy.json
 
 # Ignore the setuptools_scm auto-generated version module
 src/saf/version.py
+examples/src/saltext/safexamples/version.py
 
 # Ignore CI generated artifacts
 artifacts/

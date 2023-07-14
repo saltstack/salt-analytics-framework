@@ -1,3 +1,4 @@
 Several improvements to the project
 
 * Defer imports of uncommon usage libraries to reduce base requirements(for example, keras, numpy, papermill)
+* The `salt-analytics.examples` package now uses the same version as `salt-analytics-framework`
