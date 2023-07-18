@@ -123,7 +123,17 @@ def _install_requirements(
             session.install(*install_command, silent=PIP_INSTALL_SILENT)
 
         if onedir is False and install_salt:
-            session.install("--progress-bar=off", SALT_REQUIREMENT, silent=PIP_INSTALL_SILENT)
+            try:
+                session.install("--progress-bar=off", SALT_REQUIREMENT, silent=PIP_INSTALL_SILENT)
+            except CommandFailed:
+                # Workaround pyyaml issue https://github.com/yaml/pyyaml/issues/601
+                session.install(
+                    "--progress-bar=off",
+                    "Cython<3.0",
+                    "--no-build-isolation",
+                    SALT_REQUIREMENT,
+                    silent=PIP_INSTALL_SILENT,
+                )
 
         if install_test_requirements:
             install_extras.append("tests")
