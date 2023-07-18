@@ -1,0 +1,3 @@
+Several improvements to the project
+
+* When loading plugin configs, catch `KeyError` on unavailable plugins and list all available.
