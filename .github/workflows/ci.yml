@@ -474,7 +474,7 @@ jobs:
         path: dist/
 
     - name: Create Github Release
-      uses: ncipollo/release-action@v1.12.0
+      uses: ncipollo/release-action@v1.13.0
       with:
         artifactErrorsFailBuild: true
         artifacts: "dist/*.tar.gz,dist/*.whl"
