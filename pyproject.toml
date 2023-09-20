@@ -81,6 +81,8 @@ ignore = [
   "PERF203", # `try`-`except` within a loop incurs performance overhead"
   "PERF401", # Use a list comprehension to create a transformed list
   "PERF402", # Use `list` or `list.copy` to create a copy of a list
+  "FIX002",  # Line contains TODO"
+  "TD003",   # Missing issue link on the line following this TODO"
 ]
 ignore-init-module-imports = true
 builtins = [

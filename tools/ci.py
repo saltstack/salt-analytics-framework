@@ -88,7 +88,12 @@ def download_onedir(
     tempdir_path = pathlib.Path(tempfile.gettempdir())
     with ctx.web:
         repo_json_file = _download_file(ctx, repo_json_url, tempdir_path / "repo.json")
-        repo_json_data = json.loads(repo_json_file.read_text())
+        repo_json_contents = repo_json_file.read_text()
+        try:
+            repo_json_data = json.loads(repo_json_contents)
+        except json.JSONDecodeError:
+            ctx.error("Failed to parse JSON from:\n{repo_json_contents}")
+            ctx.exit(1)
         ctx.info("Contents of the downloaded 'repo.json' file:")
         ctx.print(repo_json_data, soft_wrap=True)
         if salt_version not in repo_json_data:
