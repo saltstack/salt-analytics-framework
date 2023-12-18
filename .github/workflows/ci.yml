@@ -468,7 +468,7 @@ jobs:
     - uses: actions/checkout@v4
 
     - name: Download Built Wheel and Source Tarball
-      uses: actions/download-artifact@v3
+      uses: actions/download-artifact@v4
       with:
         name: release-artifacts
         path: dist/
