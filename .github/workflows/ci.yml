@@ -435,7 +435,7 @@ jobs:
         nox -e build
 
     - name: Upload Built Wheel and Source Tarball
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: release-artifacts
         path: |
@@ -447,7 +447,7 @@ jobs:
         nox -e build -- examples
 
     - name: Upload Built Examples Wheel and Source Tarball
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: examples-release-artifacts
         path: |
